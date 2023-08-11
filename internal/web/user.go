@@ -7,6 +7,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 	"unicode/utf8"
 	"yellowbook/internal/domain"
 	"yellowbook/internal/service"
@@ -112,7 +113,7 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 	sess := sessions.Default(ctx)
 	sess.Set("userId", user.Id)
 	sess.Options(sessions.Options{
-		MaxAge:   60,
+		MaxAge:   60 * 60,
 		Secure:   true,
 		HttpOnly: true,
 	})
@@ -195,6 +196,8 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "获取失败")
 		return
 	}
+
+	time.Sleep(10 * time.Second)
 
 	ctx.JSON(http.StatusOK, user)
 }

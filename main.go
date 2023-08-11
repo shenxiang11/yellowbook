@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/web/middleware"
@@ -15,14 +21,31 @@ import "gorm.io/driver/mysql"
 func main() {
 	db := initDB()
 
-	server := initWebServer()
+	engine := initWebServer()
 
 	u := InitUserHandler(db)
-	u.RegisterRoutes(server.Group("/users"))
+	u.RegisterRoutes(engine.Group("/users"))
 
-	err := server.Run(":8080")
-	if err != nil {
-		panic(err)
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: engine,
+	}
+
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			// 优雅退出不能写 panic
+			// panic(err)
+			log.Println("Server err: ", err)
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	<-quit
+
+	if err := server.Shutdown(context.Background()); err != nil {
+		log.Fatal("Server shutdown failed:", err)
 	}
 }
 
