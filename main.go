@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"time"
@@ -36,9 +36,12 @@ func initWebServer() *gin.Engine {
 		MaxAge:           2 * time.Minute,
 	}))
 
-	store := cookie.NewStore([]byte("secret"))
-	server.Use(sessions.Sessions("yellow-id", store))
+	store, err := redis.NewStore(16, "tcp", "localhost:16379", "", []byte("95osj3fUD7fo0mlYdDbncXz4VD2igvf0"), []byte("0Pf2r0wZBpXVXlQNdpwCXN4ncnlnZSc3"))
+	if err != nil {
+		panic(err)
+	}
 
+	server.Use(sessions.Sessions("yellow-id", store))
 	server.Use(middleware.NewLoinMiddlewareBuilder().IgnorePaths("/users/signup").IgnorePaths("/users/login").Build())
 
 	return server

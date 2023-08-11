@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"fmt"
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -38,6 +39,7 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 	ug.POST("/signup", u.SignUp)
 	ug.POST("/login", u.Login)
 	ug.POST("/edit", u.Edit)
+	ug.POST("/logout", u.Logout)
 }
 
 func (u *UserHandler) SignUp(ctx *gin.Context) {
@@ -109,12 +111,30 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 
 	sess := sessions.Default(ctx)
 	sess.Set("userId", user.Id)
+	sess.Options(sessions.Options{
+		MaxAge:   60,
+		Secure:   true,
+		HttpOnly: true,
+	})
 	err = sess.Save()
 	if err != nil {
 		ctx.String(http.StatusOK, "系统错误")
 		return
 	}
 	ctx.String(http.StatusOK, "登录成功")
+}
+
+func (u *UserHandler) Logout(ctx *gin.Context) {
+	sess := sessions.Default(ctx)
+	sess.Options(sessions.Options{
+		MaxAge: -1,
+	})
+	err := sess.Save()
+	if err != nil {
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	ctx.String(http.StatusOK, "成功退出登录")
 }
 
 func (u *UserHandler) Edit(ctx *gin.Context) {
@@ -137,6 +157,7 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 	}
 
 	nicknameCount := utf8.RuneCountInString(req.Nickname)
+	fmt.Println(req.Nickname, nicknameCount)
 	if nicknameCount < 2 || nicknameCount > 24 {
 		ctx.String(http.StatusOK, "昵称请请设置2-24个字符")
 		return
