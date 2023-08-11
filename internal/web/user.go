@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"unicode/utf8"
 	"yellowbook/internal/domain"
 	"yellowbook/internal/service"
 )
@@ -132,6 +133,17 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 
 	var req EditReq
 	if err := ctx.Bind(&req); err != nil {
+		return
+	}
+
+	nicknameCount := utf8.RuneCountInString(req.Nickname)
+	if nicknameCount < 2 || nicknameCount > 24 {
+		ctx.String(http.StatusOK, "昵称请请设置2-24个字符")
+		return
+	}
+
+	if utf8.RuneCountInString(req.Introduction) > 100 {
+		ctx.String(http.StatusOK, "简介不能多余 100 个字符数")
 		return
 	}
 
