@@ -151,7 +151,7 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Header("x-jwt-token", tokenStr)
+	ctx.Header("X-Jwt-Token", tokenStr)
 
 	ctx.String(http.StatusOK, "登录成功")
 }

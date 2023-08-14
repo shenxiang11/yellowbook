@@ -56,6 +56,7 @@ func initWebServer() *gin.Engine {
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowHeaders:     []string{},
 		AllowCredentials: true,
+		ExposeHeaders:    []string{"X-Jwt-Token"},
 		MaxAge:           2 * time.Minute,
 	}))
 
