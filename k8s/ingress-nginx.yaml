@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: develop.yebook123.com
+    - host: dev.yellowbook.com
       http:
         paths:
           - pathType: Prefix
@@ -15,4 +15,4 @@ spec:
                 name: yellowbook
                 port:
                   number: 81
-            path: /api
+            path: /
