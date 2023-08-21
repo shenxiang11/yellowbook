@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yellowbook
+  namespace: ingress-nginx
+  labels:
+    app: yellowbook
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: yellowbook
+  template:
+    metadata:
+      name: yellowbook
+      labels:
+        app: yellowbook
+    spec:
+      containers:
+        - name: yellowbook
+          image: yellowbook:latest
+          ports:
+            - containerPort: 8081
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      

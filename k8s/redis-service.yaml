@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yellowbook-redis
+  namespace: ingress-nginx
+spec:
+  selector:
+    app: yellowbook-redis
+  ports:
+    - protocol: TCP
+      port: 6380
+      targetPort: 6379
+      nodePort: 30003
+  type: NodePort
+  

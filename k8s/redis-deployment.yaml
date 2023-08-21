@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yellowbook-redis
+  namespace: ingress-nginx
+  labels:
+    app: yellowbook-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yellowbook-redis
+  template:
+    metadata:
+      name: yellowbook-redis
+      labels:
+        app: yellowbook-redis
+    spec:
+      containers:
+        - name: yellowbook-redis
+          image: redis:latest
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yellowbook-mysql
+  namespace: ingress-nginx
+  labels:
+    app: yellowbook-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yellowbook-mysql
+  template:
+    metadata:
+      name: yellowbook-mysql
+      labels:
+        app: yellowbook-mysql
+    spec:
+      containers:
+        - name: yellowbook-mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "123456"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-storage
+          ports:
+            - containerPort: 3306
+      restartPolicy: Always
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: yellowbook-mysql-claim
+      
