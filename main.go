@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"yellowbook/config"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/web/middleware"
 )
@@ -27,7 +28,7 @@ func main() {
 	u.RegisterRoutes(engine.Group("/users"))
 
 	server := &http.Server{
-		Addr:    ":8081",
+		Addr:    config.Conf.Web.Port,
 		Handler: engine,
 	}
 
@@ -60,7 +61,7 @@ func initWebServer() *gin.Engine {
 		MaxAge:           2 * time.Minute,
 	}))
 
-	store, err := redis.NewStore(16, "tcp", "yellowbook-redis:6380", "", []byte("95osj3fUD7fo0mlYdDbncXz4VD2igvf0"), []byte("0Pf2r0wZBpXVXlQNdpwCXN4ncnlnZSc3"))
+	store, err := redis.NewStore(16, "tcp", config.Conf.Redis.Addr, "", []byte("95osj3fUD7fo0mlYdDbncXz4VD2igvf0"), []byte("0Pf2r0wZBpXVXlQNdpwCXN4ncnlnZSc3"))
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +73,7 @@ func initWebServer() *gin.Engine {
 }
 
 func initDB() *gorm.DB {
-	db, err := gorm.Open(mysql.Open("root:123456@tcp(yellowbook-mysql:3308)/yellowbook"))
+	db, err := gorm.Open(mysql.Open(config.Conf.DB.DSN))
 	if err != nil {
 		panic(err)
 	}
