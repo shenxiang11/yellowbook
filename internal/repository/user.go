@@ -51,7 +51,10 @@ func (r *UserRepository) UpdateProfile(ctx context.Context, u domain.Profile) er
 	}
 
 	// 为了一致性，删除对应的缓存
-	r.cache.Delete(ctx, u.UserId)
+	err = r.cache.Delete(ctx, u.UserId)
+	if err != nil {
+		log.Panicln("缓存删除失败：%v", err)
+	}
 
 	return r.dao.UpdateProfile(ctx, dao.UserProfile{
 		UserId:       u.UserId,
