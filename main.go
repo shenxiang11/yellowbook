@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
@@ -21,10 +20,11 @@ import "gorm.io/driver/mysql"
 
 func main() {
 	db := initDB()
+	rdb := initRedis()
 
 	engine := initWebServer()
 
-	u := InitUserHandler(db)
+	u := InitUserHandler(db, rdb)
 	u.RegisterRoutes(engine.Group("/users"))
 
 	server := &http.Server{
@@ -61,12 +61,6 @@ func initWebServer() *gin.Engine {
 		MaxAge:           2 * time.Minute,
 	}))
 
-	store, err := redis.NewStore(16, "tcp", config.Conf.Redis.Addr, "", []byte("95osj3fUD7fo0mlYdDbncXz4VD2igvf0"), []byte("0Pf2r0wZBpXVXlQNdpwCXN4ncnlnZSc3"))
-	if err != nil {
-		panic(err)
-	}
-
-	server.Use(sessions.Sessions("yellow-id", store))
 	server.Use(middleware.NewLoinMiddlewareBuilder().IgnorePaths("/users/signup").IgnorePaths("/users/login").Build())
 
 	return server
@@ -84,4 +78,11 @@ func initDB() *gorm.DB {
 	}
 
 	return db
+}
+
+func initRedis() redis.Cmdable {
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: config.Conf.Redis.Addr,
+	})
+	return redisClient
 }

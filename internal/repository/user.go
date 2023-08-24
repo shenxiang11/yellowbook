@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"log"
 	"time"
 	"yellowbook/internal/domain"
+	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/dao"
 )
 
@@ -11,12 +13,14 @@ var ErrUserDuplicateEmail = dao.ErrUserDuplicateEmail
 var ErrUserNotFound = dao.ErrUserNotFound
 
 type UserRepository struct {
-	dao *dao.UserDAO
+	dao   *dao.UserDAO
+	cache *cache.UserCache
 }
 
-func NewUserRepository(dao *dao.UserDAO) *UserRepository {
+func NewUserRepository(dao *dao.UserDAO, cache *cache.UserCache) *UserRepository {
 	return &UserRepository{
-		dao: dao,
+		dao:   dao,
+		cache: cache,
 	}
 }
 
@@ -46,6 +50,9 @@ func (r *UserRepository) UpdateProfile(ctx context.Context, u domain.Profile) er
 		return err
 	}
 
+	// 为了一致性，删除对应的缓存
+	r.cache.Delete(ctx, u.UserId)
+
 	return r.dao.UpdateProfile(ctx, dao.UserProfile{
 		UserId:       u.UserId,
 		Nickname:     u.Nickname,
@@ -55,19 +62,31 @@ func (r *UserRepository) UpdateProfile(ctx context.Context, u domain.Profile) er
 }
 
 func (r *UserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.User, error) {
-	u, err := r.dao.FindProfileByUserId(ctx, uid)
+	u, err := r.cache.Get(ctx, uid)
+	if err == nil {
+		return u, nil
+	}
+
+	ue, err := r.dao.FindProfileByUserId(ctx, uid)
 
 	var user domain.User
-	user.Id = u.Id
-	user.Email = u.Email
+	user.Id = ue.Id
+	user.Email = ue.Email
 
 	var profile domain.Profile
 	user.Profile = &profile
 
-	user.Profile.UserId = u.Id
-	user.Profile.Nickname = u.Profile.Nickname
-	user.Profile.Birthday = time.UnixMilli(u.Profile.Birthday).Format("2006-01-02")
-	user.Profile.Introduction = u.Profile.Introduction
+	user.Profile.UserId = ue.Id
+	user.Profile.Nickname = ue.Profile.Nickname
+	user.Profile.Birthday = time.UnixMilli(ue.Profile.Birthday).Format("2006-01-02")
+	user.Profile.Introduction = ue.Profile.Introduction
+
+	go func() {
+		err := r.cache.Set(ctx, user)
+		if err != nil {
+			log.Printf("Set cache failed, %v \n", user)
+		}
+	}()
 
 	return user, err
 }

@@ -7,8 +7,10 @@
 package main
 
 import (
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"yellowbook/internal/repository"
+	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
 	"yellowbook/internal/web"
@@ -16,9 +18,10 @@ import (
 
 // Injectors from wire.go:
 
-func InitUserHandler(db *gorm.DB) *web.UserHandler {
+func InitUserHandler(db *gorm.DB, redisCmd redis.Cmdable) *web.UserHandler {
 	userDAO := dao.NewUserDAO(db)
-	userRepository := repository.NewUserRepository(userDAO)
+	userCache := cache.NewUserCache(redisCmd)
+	userRepository := repository.NewUserRepository(userDAO, userCache)
 	userService := service.NewUserService(userRepository)
 	userHandler := web.NewUserHandler(userService)
 	return userHandler
