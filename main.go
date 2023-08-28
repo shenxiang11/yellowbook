@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/cloopen/go-sms-sdk/cloopen"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -19,12 +20,9 @@ import (
 import "gorm.io/driver/mysql"
 
 func main() {
-	db := initDB()
-	rdb := initRedis()
-
 	engine := initWebServer()
 
-	u := InitUserHandler(db, rdb)
+	u := InitUserHandler("8aaf07087fe90a32017ff389d7d301c2")
 	u.RegisterRoutes(engine.Group("/users"))
 
 	server := &http.Server{
@@ -61,7 +59,14 @@ func initWebServer() *gin.Engine {
 		MaxAge:           2 * time.Minute,
 	}))
 
-	server.Use(middleware.NewLoinMiddlewareBuilder().IgnorePaths("/users/signup").IgnorePaths("/users/login").Build())
+	server.Use(
+		middleware.NewLoinMiddlewareBuilder().
+			IgnorePaths("/users/signup").
+			IgnorePaths("/users/login").
+			IgnorePaths("/users/login_sms/code/send").
+			IgnorePaths("/users/login_sms").
+			Build(),
+	)
 
 	return server
 }
@@ -85,4 +90,14 @@ func initRedis() redis.Cmdable {
 		Addr: config.Conf.Redis.Addr,
 	})
 	return redisClient
+}
+
+func initCloopen() *cloopen.Client {
+	cfg := cloopen.DefaultConfig().
+		WithAPIAccount("8aaf07087fe90a32017ff389d6ac01bb").
+		WithAPIToken("a1c23065a7d847c384d719ad240f6384")
+
+	client := cloopen.NewJsonClient(cfg)
+
+	return client
 }

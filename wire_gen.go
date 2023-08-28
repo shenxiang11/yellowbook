@@ -7,22 +7,28 @@
 package main
 
 import (
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 	"yellowbook/internal/repository"
 	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
+	"yellowbook/internal/service/sms/cloopen"
 	"yellowbook/internal/web"
 )
 
 // Injectors from wire.go:
 
-func InitUserHandler(db *gorm.DB, redisCmd redis.Cmdable) *web.UserHandler {
+func InitUserHandler(smsAppId string) *web.UserHandler {
+	db := initDB()
 	userDAO := dao.NewUserDAO(db)
-	userCache := cache.NewUserCache(redisCmd)
+	cmdable := initRedis()
+	userCache := cache.NewUserCache(cmdable)
 	userRepository := repository.NewUserRepository(userDAO, userCache)
 	userService := service.NewUserService(userRepository)
-	userHandler := web.NewUserHandler(userService)
+	codeCache := cache.NewCodeCache(cmdable)
+	codeRepository := repository.NewCodeRepository(codeCache)
+	client := initCloopen()
+	smsService := cloopen.NewService(client, smsAppId)
+	codeService := service.NewCodeService(codeRepository, smsService)
+	userHandler := web.NewUserHandler(userService, codeService)
 	return userHandler
 }

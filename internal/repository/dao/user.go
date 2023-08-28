@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var ErrUserDuplicateEmail = errors.New("邮箱冲突")
+var ErrUserDuplicate = errors.New("用户冲突")
 var ErrUserNotFound = gorm.ErrRecordNotFound
 
 type UserDAO struct {
@@ -37,7 +37,7 @@ func (dao *UserDAO) Insert(ctx context.Context, u User) error {
 	if errors.As(err, &mysqlErr) {
 		const uniqueConflictsErrNo uint16 = 1062
 		if mysqlErr.Number == uniqueConflictsErrNo {
-			return ErrUserDuplicateEmail
+			return ErrUserDuplicate
 		}
 	}
 
@@ -77,6 +77,7 @@ func (dao *UserDAO) FindProfileByUserId(ctx context.Context, userId uint64) (Use
 type User struct {
 	Id         uint64 `gorm:"primaryKey,autoIncrement"`
 	Email      string `gorm:"unique"`
+	Phone      string `gorm:"unique"`
 	Password   string
 	CreateTime int64
 	UpdateTime int64

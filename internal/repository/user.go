@@ -9,7 +9,7 @@ import (
 	"yellowbook/internal/repository/dao"
 )
 
-var ErrUserDuplicateEmail = dao.ErrUserDuplicateEmail
+var ErrUserDuplicateEmail = dao.ErrUserDuplicate
 var ErrUserNotFound = dao.ErrUserNotFound
 
 type UserRepository struct {

@@ -16,23 +16,31 @@ import (
 
 type UserHandler struct {
 	svc         *service.UserService
+	codeSvs     service.CodeService
+	phoneExp    *regexp.Regexp
 	emailExp    *regexp.Regexp
 	passwordExp *regexp.Regexp
 }
 
-func NewUserHandler(svc *service.UserService) *UserHandler {
+const biz = "login"
+
+func NewUserHandler(svc *service.UserService, codeSvc service.CodeService) *UserHandler {
 	const (
 		emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
+		phoneRegexPattern    = `^1\d{10}$`
 	)
 
 	emailExp := regexp.MustCompile(emailRegexPattern, regexp.None)
 	passwordExp := regexp.MustCompile(passwordRegexPattern, regexp.None)
+	phoneExp := regexp.MustCompile(phoneRegexPattern, regexp.None)
 
 	return &UserHandler{
 		svc:         svc,
+		codeSvs:     codeSvc,
 		emailExp:    emailExp,
 		passwordExp: passwordExp,
+		phoneExp:    phoneExp,
 	}
 }
 
@@ -41,6 +49,8 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 	ug.POST("/signup", u.SignUp)
 	ug.POST("/login", u.Login)
 	ug.POST("/edit", u.Edit)
+	ug.POST("/login_sms/code/send", u.SendLoginSMSCode)
+	ug.POST("/login_sms", u.LoginSMS)
 }
 
 func (u *UserHandler) SignUp(ctx *gin.Context) {
@@ -202,4 +212,49 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, user)
+}
+
+func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
+	type Req struct {
+		Phone string `json:"phone"`
+	}
+	var req Req
+	if err := ctx.Bind(&req); err != nil {
+		return
+	}
+
+	ok, err := u.phoneExp.MatchString(req.Phone)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+	}
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Msg: "手机格式不正确",
+		})
+		return
+	}
+
+	err = u.codeSvs.Send(ctx, biz, req.Phone)
+	switch {
+	case err == nil:
+		ctx.JSON(http.StatusOK, Result[any]{
+			Msg: "发送成功",
+		})
+	case errors.Is(err, service.ErrCodeSendTooMany):
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Msg: "发送太频繁，请稍后再试",
+		})
+	default:
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+	}
+}
+
+func (u *UserHandler) LoginSMS(ctx *gin.Context) {
+
 }
