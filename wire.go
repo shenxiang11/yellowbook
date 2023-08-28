@@ -9,11 +9,11 @@ import (
 	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
-	"yellowbook/internal/service/sms/cloopen"
+	"yellowbook/internal/service/sms/memory"
 	"yellowbook/internal/web"
 )
 
-func InitUserHandler(smsAppId string) *web.UserHandler {
+func InitUserHandler() *web.UserHandler {
 	wire.Build(
 		web.NewUserHandler,
 		service.NewUserService,
@@ -23,11 +23,10 @@ func InitUserHandler(smsAppId string) *web.UserHandler {
 		service.NewCodeService,
 		repository.NewCodeRepository,
 		cache.NewCodeCache,
-		cloopen.NewService,
+		memory.NewService,
 
 		initDB,
 		initRedis,
-		initCloopen,
 	)
 	return &web.UserHandler{}
 }

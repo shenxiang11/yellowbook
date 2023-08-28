@@ -1,9 +1,10 @@
 package config
 
 type Config struct {
-	Web   GinConfig
-	DB    DBConfig
-	Redis RedisConfig
+	Web     GinConfig
+	DB      DBConfig
+	Redis   RedisConfig
+	Cloopen CloopenConfig
 }
 
 type GinConfig struct {
@@ -16,4 +17,8 @@ type DBConfig struct {
 
 type RedisConfig struct {
 	Addr string
+}
+
+type CloopenConfig struct {
+	AppId string
 }

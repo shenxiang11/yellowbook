@@ -12,4 +12,7 @@ var Conf = &Config{
 	Redis: RedisConfig{
 		Addr: "yellowbook-redis:6380",
 	},
+	Cloopen: CloopenConfig{
+		AppId: "8aaf07087fe90a32017ff389d7d301c2",
+	},
 }

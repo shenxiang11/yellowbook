@@ -66,20 +66,33 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 
 	ok, err := u.emailExp.MatchString(req.Email)
 	if err != nil {
-		ctx.String(http.StatusOK, "系统错误")
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
 	}
 	if !ok {
-		ctx.String(http.StatusOK, "邮箱格式不正确")
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Code: 4,
+			Msg:  "邮箱格式不正确",
+		})
 		return
 	}
 
 	ok, err = u.passwordExp.MatchString(req.Password)
 	if err != nil {
-		ctx.String(http.StatusOK, "系统错误")
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
 		return
 	}
 	if !ok {
-		ctx.String(http.StatusOK, "密码必须大于8位，包含数字、特殊字符")
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Code: 4,
+			Msg:  "密码必须大于8位，包含数字、特殊字符",
+		})
 		return
 	}
 
@@ -87,12 +100,18 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 		Email:    req.Email,
 		Password: req.Password,
 	})
-	if errors.Is(err, service.ErrUserDuplicateEmail) {
-		ctx.String(http.StatusOK, "邮箱冲突")
+	if errors.Is(err, service.ErrUserDuplicate) {
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "邮箱冲突",
+		})
 		return
 	}
 	if err != nil {
-		ctx.String(http.StatusOK, "系统错误")
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
 		return
 	}
 
@@ -194,21 +213,30 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 		Introduction: req.Introduction,
 	})
 	if err != nil {
-		ctx.String(http.StatusOK, "更新失败")
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Msg: "更新失败",
+		})
 		return
 	}
 
-	ctx.String(http.StatusOK, "更新成功")
+	ctx.JSON(http.StatusOK, Result[domain.User]{
+		Msg: "更新成功",
+	})
 }
 
 func (u *UserHandler) Profile(ctx *gin.Context) {
 	user, err := u.svc.QueryProfile(ctx, getUserId(ctx))
 	if err != nil {
-		ctx.String(http.StatusOK, "获取失败")
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "获取失败",
+		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, Result[domain.User]{
+		Data: user,
+	})
 }
 
 func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {

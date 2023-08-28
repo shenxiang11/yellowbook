@@ -22,7 +22,7 @@ import "gorm.io/driver/mysql"
 func main() {
 	engine := initWebServer()
 
-	u := InitUserHandler("8aaf07087fe90a32017ff389d7d301c2")
+	u := InitUserHandler()
 	u.RegisterRoutes(engine.Group("/users"))
 
 	server := &http.Server{

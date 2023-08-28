@@ -11,13 +11,13 @@ import (
 	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
-	"yellowbook/internal/service/sms/cloopen"
+	"yellowbook/internal/service/sms/memory"
 	"yellowbook/internal/web"
 )
 
 // Injectors from wire.go:
 
-func InitUserHandler(smsAppId string) *web.UserHandler {
+func InitUserHandler() *web.UserHandler {
 	db := initDB()
 	userDAO := dao.NewUserDAO(db)
 	cmdable := initRedis()
@@ -26,8 +26,7 @@ func InitUserHandler(smsAppId string) *web.UserHandler {
 	userService := service.NewUserService(userRepository)
 	codeCache := cache.NewCodeCache(cmdable)
 	codeRepository := repository.NewCodeRepository(codeCache)
-	client := initCloopen()
-	smsService := cloopen.NewService(client, smsAppId)
+	smsService := memory.NewService()
 	codeService := service.NewCodeService(codeRepository, smsService)
 	userHandler := web.NewUserHandler(userService, codeService)
 	return userHandler

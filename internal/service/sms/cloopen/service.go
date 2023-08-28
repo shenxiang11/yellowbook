@@ -6,6 +6,7 @@ import (
 	"github.com/cloopen/go-sms-sdk/cloopen"
 	"log"
 	"strings"
+	"yellowbook/config"
 	"yellowbook/internal/service/sms"
 )
 
@@ -14,9 +15,9 @@ type Service struct {
 	client *cloopen.Client
 }
 
-func NewService(client *cloopen.Client, appId string) sms.Service {
+func NewService(client *cloopen.Client) sms.Service {
 	return &Service{
-		appId:  appId,
+		appId:  config.Conf.Cloopen.AppId,
 		client: client,
 	}
 }

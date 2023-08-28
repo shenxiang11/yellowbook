@@ -84,6 +84,7 @@ func (r *UserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.U
 	var user domain.User
 	user.Id = ue.Id
 	user.Email = ue.Email.String
+	user.Phone = ue.Phone.String
 
 	var profile domain.Profile
 	user.Profile = &profile
