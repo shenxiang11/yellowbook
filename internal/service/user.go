@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ErrUserDuplicateEmail    = repository.ErrUserDuplicateEmail
+	ErrUserDuplicateEmail    = repository.ErrUserDuplicate
 	ErrInvalidUserOrPassword = errors.New("账号、邮箱或密码不正确")
 )
 
@@ -56,4 +56,19 @@ func (svc *UserService) EditProfile(ctx context.Context, u domain.Profile) error
 
 func (svc *UserService) QueryProfile(ctx context.Context, userId uint64) (domain.User, error) {
 	return svc.repo.QueryProfile(ctx, userId)
+}
+
+func (svc *UserService) FindOrCreate(ctx context.Context, phone string) (domain.User, error) {
+	u, err := svc.repo.FindByPhone(ctx, phone)
+	if !errors.Is(err, repository.ErrUserNotFound) {
+		return u, err
+	}
+
+	u = domain.User{Phone: phone}
+	err = svc.repo.Create(ctx, u)
+	if err != nil && !errors.Is(err, repository.ErrUserDuplicate) {
+		return u, err
+	}
+
+	return svc.repo.FindByPhone(ctx, phone)
 }

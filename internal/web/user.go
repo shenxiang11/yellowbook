@@ -136,34 +136,31 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 
 	user, err := u.svc.Login(ctx, req.Email, req.Password)
 	if errors.Is(err, service.ErrInvalidUserOrPassword) {
-		ctx.String(http.StatusOK, "用户名或密码不正确")
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 4,
+			Msg:  "用户名或密码不正确",
+		})
 		return
 	}
 	if err != nil {
-		ctx.String(http.StatusOK, "系统错误")
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
 		return
 	}
 
-	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKey))
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, "系统错误")
+	if err = u.setJWTToken(ctx, user); err != nil {
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
 		return
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodRS512, jwt.RegisteredClaims{
-		Issuer:    "yellowbook",
-		Subject:   strconv.FormatUint(user.Id, 10),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 10)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
+
+	ctx.JSON(http.StatusOK, Result[any]{
+		Msg: "登录成功",
 	})
-	tokenStr, err := token.SignedString(key)
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, "系统错误")
-		return
-	}
-
-	ctx.Header("X-Jwt-Token", tokenStr)
-
-	ctx.String(http.StatusOK, "登录成功")
 }
 
 func (u *UserHandler) Edit(ctx *gin.Context) {
@@ -256,5 +253,68 @@ func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
 }
 
 func (u *UserHandler) LoginSMS(ctx *gin.Context) {
+	type Req struct {
+		Phone string `json:"phone"`
+		Code  string `json:"code"`
+	}
+	var req Req
+	if err := ctx.Bind(&req); err != nil {
+		return
+	}
 
+	err := u.codeSvs.Verify(ctx, biz, req.Phone, req.Code)
+	if errors.Is(err, service.ErrCodeVerifyFailed) {
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Code: 4,
+			Msg:  "验证码错误",
+		})
+		return
+	} else if err != nil {
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
+	}
+
+	user, err := u.svc.FindOrCreate(ctx, req.Phone)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
+	}
+
+	if err = u.setJWTToken(ctx, user); err != nil {
+		ctx.JSON(http.StatusInternalServerError, Result[any]{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, Result[any]{
+		Msg: "验证成功",
+	})
+}
+
+func (u *UserHandler) setJWTToken(ctx *gin.Context, user domain.User) error {
+	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKey))
+	if err != nil {
+		return err
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS512, jwt.RegisteredClaims{
+		Issuer:    "yellowbook",
+		Subject:   strconv.FormatUint(user.Id, 10),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 10)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+	})
+	tokenStr, err := token.SignedString(key)
+	if err != nil {
+		return err
+	}
+
+	ctx.Header("X-Jwt-Token", tokenStr)
+	return nil
 }

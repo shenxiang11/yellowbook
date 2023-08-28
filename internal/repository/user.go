@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"time"
 	"yellowbook/internal/domain"
@@ -9,7 +10,7 @@ import (
 	"yellowbook/internal/repository/dao"
 )
 
-var ErrUserDuplicateEmail = dao.ErrUserDuplicate
+var ErrUserDuplicate = dao.ErrUserDuplicate
 var ErrUserNotFound = dao.ErrUserNotFound
 
 type UserRepository struct {
@@ -32,14 +33,22 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (domain.
 
 	return domain.User{
 		Id:       u.Id,
-		Email:    u.Email,
+		Email:    u.Email.String,
+		Phone:    u.Phone.String,
 		Password: u.Password,
 	}, nil
 }
 
 func (r *UserRepository) Create(ctx context.Context, u domain.User) error {
 	return r.dao.Insert(ctx, dao.User{
-		Email:    u.Email,
+		Email: sql.NullString{
+			String: u.Email,
+			Valid:  u.Email != "",
+		},
+		Phone: sql.NullString{
+			String: u.Phone,
+			Valid:  u.Phone != "",
+		},
 		Password: u.Password,
 	})
 }
@@ -74,7 +83,7 @@ func (r *UserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.U
 
 	var user domain.User
 	user.Id = ue.Id
-	user.Email = ue.Email
+	user.Email = ue.Email.String
 
 	var profile domain.Profile
 	user.Profile = &profile
@@ -92,6 +101,19 @@ func (r *UserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.U
 	}()
 
 	return user, err
+}
+
+func (r *UserRepository) FindByPhone(ctx context.Context, phone string) (domain.User, error) {
+	u, err := r.dao.FindByPhone(ctx, phone)
+	if err != nil {
+		return domain.User{}, err
+	}
+	return domain.User{
+		Id:       u.Id,
+		Email:    u.Email.String,
+		Phone:    u.Phone.String,
+		Password: u.Password,
+	}, nil
 }
 
 //func (r UserRepository) FindById(ctx context.Context) domain.User {

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
@@ -74,10 +75,21 @@ func (dao *UserDAO) FindProfileByUserId(ctx context.Context, userId uint64) (Use
 	return user, nil
 }
 
+func (dao *UserDAO) FindByPhone(ctx context.Context, phone string) (User, error) {
+	var user User
+	err := dao.db.WithContext(ctx).Model(&User{}).Where("phone = ?", phone).First(&user).Error
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
 type User struct {
-	Id         uint64 `gorm:"primaryKey,autoIncrement"`
-	Email      string `gorm:"unique"`
-	Phone      string `gorm:"unique"`
+	Id         uint64         `gorm:"primaryKey,autoIncrement"`
+	Email      sql.NullString `gorm:"unique"`
+	Phone      sql.NullString `gorm:"unique"`
 	Password   string
 	CreateTime int64
 	UpdateTime int64
