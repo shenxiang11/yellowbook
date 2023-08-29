@@ -4,16 +4,17 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"yellowbook/internal/repository"
 	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
-	"yellowbook/internal/service/sms/memory"
 	"yellowbook/internal/web"
+	"yellowbook/ioc"
 )
 
-func InitUserHandler() *web.UserHandler {
+func InitWebServer() *gin.Engine {
 	wire.Build(
 		web.NewUserHandler,
 		service.NewUserService,
@@ -23,10 +24,12 @@ func InitUserHandler() *web.UserHandler {
 		service.NewCodeService,
 		repository.NewCodeRepository,
 		cache.NewCodeCache,
-		memory.NewService,
 
-		initDB,
-		initRedis,
+		ioc.InitWebServer,
+		ioc.InitSMSService,
+		ioc.InitDB,
+		ioc.InitRedis,
+		ioc.InitCloopen,
 	)
-	return &web.UserHandler{}
+	return new(gin.Engine)
 }

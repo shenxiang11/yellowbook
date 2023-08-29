@@ -7,27 +7,30 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"yellowbook/internal/repository"
 	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
-	"yellowbook/internal/service/sms/memory"
 	"yellowbook/internal/web"
+	"yellowbook/ioc"
 )
 
 // Injectors from wire.go:
 
-func InitUserHandler() *web.UserHandler {
-	db := initDB()
+func InitWebServer() *gin.Engine {
+	db := ioc.InitDB()
 	userDAO := dao.NewUserDAO(db)
-	cmdable := initRedis()
+	cmdable := ioc.InitRedis()
 	userCache := cache.NewUserCache(cmdable)
 	userRepository := repository.NewUserRepository(userDAO, userCache)
 	userService := service.NewUserService(userRepository)
 	codeCache := cache.NewCodeCache(cmdable)
 	codeRepository := repository.NewCodeRepository(codeCache)
-	smsService := memory.NewService()
+	client := ioc.InitCloopen()
+	smsService := ioc.InitSMSService(client)
 	codeService := service.NewCodeService(codeRepository, smsService)
 	userHandler := web.NewUserHandler(userService, codeService)
-	return userHandler
+	engine := ioc.InitWebServer(userHandler)
+	return engine
 }
