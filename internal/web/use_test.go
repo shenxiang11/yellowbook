@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"yellowbook/internal/domain"
 	"yellowbook/internal/service"
 	svcmocks "yellowbook/internal/service/mocks"
 )
@@ -124,6 +125,160 @@ func TestUserHandler_SignUp(t *testing.T) {
 			reqBuilder: func(t *testing.T) *http.Request {
 				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "hello@world#123"}`))
 				req, err := http.NewRequest(http.MethodPost, signUpUrl, body)
+				req.Header.Set("Content-Type", "application/json")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return req
+			},
+			wantCode: 500,
+			wantBody: `{"code":5,"msg":"系统错误","data":null}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			userSvc, codeSvc := tc.mock(ctrl)
+			handler := NewUserHandler(userSvc, codeSvc)
+
+			server := gin.Default()
+			handler.RegisterRoutes(server.Group("/users"))
+
+			req := tc.reqBuilder(t)
+			recorder := httptest.NewRecorder()
+
+			server.ServeHTTP(recorder, req)
+
+			assert.Equal(t, tc.wantCode, recorder.Code)
+			assert.Equal(t, tc.wantBody, recorder.Body.String())
+		})
+	}
+}
+
+func TestUserHandler_Login(t *testing.T) {
+	const loginUrl = "/users/login"
+
+	testCases := []struct {
+		name       string
+		mock       func(ctrl *gomock.Controller) (service.UserService, service.CodeService)
+		reqBuilder func(t *testing.T) *http.Request
+		wantCode   int
+		wantBody   string
+	}{
+		{
+			name: "登录成功",
+			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+					domain.User{},
+					nil,
+				)
+
+				codeSvc := svcmocks.NewMockCodeService(ctrl)
+				return userSvc, codeSvc
+			},
+			reqBuilder: func(t *testing.T) *http.Request {
+				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "hello@world#123"}`))
+				req, err := http.NewRequest(http.MethodPost, loginUrl, body)
+				req.Header.Set("Content-Type", "application/json")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return req
+			},
+			wantCode: 200,
+			wantBody: `{"code":0,"msg":"登录成功","data":null}`,
+		},
+		{
+			name: "非 JSON 输入",
+			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+					domain.User{},
+					nil,
+				)
+
+				codeSvc := svcmocks.NewMockCodeService(ctrl)
+				return userSvc, codeSvc
+			},
+			reqBuilder: func(t *testing.T) *http.Request {
+				body := bytes.NewBuffer([]byte("any string"))
+				req, err := http.NewRequest(http.MethodPost, loginUrl, body)
+				req.Header.Set("Content-Type", "application/json")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return req
+			},
+			wantCode: 400,
+			wantBody: `{"code":4,"msg":"输入错误","data":null}`,
+		},
+		{
+			name: "用户名或密码不正确",
+			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+					domain.User{},
+					service.ErrInvalidUserOrPassword,
+				)
+
+				codeSvc := svcmocks.NewMockCodeService(ctrl)
+				return userSvc, codeSvc
+			},
+			reqBuilder: func(t *testing.T) *http.Request {
+				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "123456"}`))
+				req, err := http.NewRequest(http.MethodPost, loginUrl, body)
+				req.Header.Set("Content-Type", "application/json")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return req
+			},
+			wantCode: 400,
+			wantBody: `{"code":4,"msg":"用户名或密码不正确","data":null}`,
+		},
+		{
+			name: "系统错误",
+			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+					domain.User{},
+					errors.New("系统错误"),
+				)
+
+				codeSvc := svcmocks.NewMockCodeService(ctrl)
+				return userSvc, codeSvc
+			},
+			reqBuilder: func(t *testing.T) *http.Request {
+				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "123456"}`))
+				req, err := http.NewRequest(http.MethodPost, loginUrl, body)
+				req.Header.Set("Content-Type", "application/json")
+				if err != nil {
+					t.Fatal(err)
+				}
+				return req
+			},
+			wantCode: 500,
+			wantBody: `{"code":5,"msg":"系统错误","data":null}`,
+		},
+		{
+			name: "设置 JWT 异常",
+			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+					domain.User{},
+					errors.New("系统错误"),
+				)
+
+				codeSvc := svcmocks.NewMockCodeService(ctrl)
+				return userSvc, codeSvc
+			},
+			reqBuilder: func(t *testing.T) *http.Request {
+				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "123456"}`))
+				req, err := http.NewRequest(http.MethodPost, loginUrl, body)
 				req.Header.Set("Content-Type", "application/json")
 				if err != nil {
 					t.Fatal(err)

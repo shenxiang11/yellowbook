@@ -68,14 +68,9 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	ok, err := u.emailExp.MatchString(req.Email)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
-			Code: 5,
-			Msg:  "系统错误",
-		})
-		return
-	}
+	// https://github.com/dlclark/regexp2/issues/62#issuecomment-1493117109
+	// 作者说不设置超时，不会有超时错误，所以目前可以忽略错误
+	ok, _ := u.emailExp.MatchString(req.Email)
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, Result[any]{
 			Code: 4,
@@ -84,14 +79,7 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	ok, err = u.passwordExp.MatchString(req.Password)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
-			Code: 5,
-			Msg:  "系统错误",
-		})
-		return
-	}
+	ok, _ = u.passwordExp.MatchString(req.Password)
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, Result[any]{
 			Code: 4,
@@ -100,7 +88,7 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	err = u.svc.SignUp(ctx, domain.User{
+	err := u.svc.SignUp(ctx, domain.User{
 		Email:    req.Email,
 		Password: req.Password,
 	})
@@ -156,12 +144,16 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 
 	var req LoginReq
 	if err := ctx.Bind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Code: 4,
+			Msg:  "输入错误",
+		})
 		return
 	}
 
 	user, err := u.svc.Login(ctx, req.Email, req.Password)
 	if errors.Is(err, service.ErrInvalidUserOrPassword) {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result[any]{
 			Code: 4,
 			Msg:  "用户名或密码不正确",
 		})
@@ -254,13 +246,7 @@ func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
 		return
 	}
 
-	ok, err := u.phoneExp.MatchString(req.Phone)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
-			Code: 5,
-			Msg:  "系统错误",
-		})
-	}
+	ok, _ := u.phoneExp.MatchString(req.Phone)
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, Result[any]{
 			Msg: "手机格式不正确",
@@ -268,7 +254,7 @@ func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
 		return
 	}
 
-	err = u.codeSvs.Send(ctx, biz, req.Phone)
+	err := u.codeSvs.Send(ctx, biz, req.Phone)
 	switch {
 	case err == nil:
 		ctx.JSON(http.StatusOK, Result[any]{
