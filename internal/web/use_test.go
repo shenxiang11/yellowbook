@@ -81,11 +81,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		{
 			name: "密码错误",
 			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
-				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(nil)
-
-				codeSvc := svcmocks.NewMockCodeService(ctrl)
-				return userSvc, codeSvc
+				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
 				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "1234"}`))
@@ -104,9 +100,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(service.ErrUserDuplicate)
-
-				codeSvc := svcmocks.NewMockCodeService(ctrl)
-				return userSvc, codeSvc
+				return userSvc, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
 				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "hello@world#123"}`))
@@ -125,9 +119,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(errors.New("其他任意系统异常"))
-
-				codeSvc := svcmocks.NewMockCodeService(ctrl)
-				return userSvc, codeSvc
+				return userSvc, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
 				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "hello@world#123"}`))
@@ -139,7 +131,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 				return req
 			},
 			wantCode: 500,
-			wantBody: `{"code":5,"msg":"系统异常","data":null}`,
+			wantBody: `{"code":5,"msg":"系统错误","data":null}`,
 		},
 	}
 
