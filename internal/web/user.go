@@ -15,7 +15,7 @@ import (
 )
 
 type UserHandler struct {
-	svc         *service.UserService
+	svc         service.UserService
 	codeSvs     service.CodeService
 	phoneExp    *regexp.Regexp
 	emailExp    *regexp.Regexp
@@ -24,7 +24,7 @@ type UserHandler struct {
 
 const biz = "login"
 
-func NewUserHandler(svc *service.UserService, codeSvc service.CodeService) *UserHandler {
+func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserHandler {
 	const (
 		emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
@@ -61,6 +61,10 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 
 	var req SignUpReq
 	if err := ctx.Bind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, Result[any]{
+			Code: 4,
+			Msg:  "输入错误",
+		})
 		return
 	}
 
@@ -115,7 +119,9 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	ctx.String(http.StatusOK, "注册成功")
+	ctx.JSON(http.StatusOK, Result[any]{
+		Msg: "注册成功",
+	})
 }
 
 type UserClaims struct {
