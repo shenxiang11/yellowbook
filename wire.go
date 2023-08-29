@@ -8,6 +8,7 @@ import (
 	"github.com/google/wire"
 	"yellowbook/internal/repository"
 	"yellowbook/internal/repository/cache"
+	"yellowbook/internal/repository/cache/ristretto"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
 	"yellowbook/internal/web"
@@ -23,8 +24,9 @@ func InitWebServer() *gin.Engine {
 		cache.NewUserCache,
 		service.NewCodeService,
 		repository.NewCodeRepository,
-		cache.NewCodeCache,
+		ristretto.NewCodeCache,
 
+		ioc.InitRistretto,
 		ioc.InitWebServer,
 		ioc.InitSMSService,
 		ioc.InitDB,

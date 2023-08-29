@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"yellowbook/internal/repository"
 	"yellowbook/internal/repository/cache"
+	"yellowbook/internal/repository/cache/ristretto"
 	"yellowbook/internal/repository/dao"
 	"yellowbook/internal/service"
 	"yellowbook/internal/web"
@@ -25,7 +26,8 @@ func InitWebServer() *gin.Engine {
 	userCache := cache.NewUserCache(cmdable)
 	userRepository := repository.NewUserRepository(userDAO, userCache)
 	userService := service.NewUserService(userRepository)
-	codeCache := cache.NewCodeCache(cmdable)
+	ristrettoCache := ioc.InitRistretto()
+	codeCache := ristretto.NewCodeCache(ristrettoCache)
 	codeRepository := repository.NewCodeRepository(codeCache)
 	client := ioc.InitCloopen()
 	smsService := ioc.InitSMSService(client)
