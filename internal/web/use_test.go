@@ -132,14 +132,14 @@ func TestUserHandler_SignUp(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		mock       func(ctrl *gomock.Controller) (service.UserService, service.CodeService)
+		mock       func(ctrl *gomock.Controller) (service.IUserService, service.CodeService)
 		reqBuilder func(t *testing.T) *http.Request
 		wantCode   int
 		wantBody   string
 	}{
 		{
 			name: "注册成功",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(nil)
 
@@ -160,7 +160,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		},
 		{
 			name: "非 JSON 输入",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -177,7 +177,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		},
 		{
 			name: "邮箱错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -194,7 +194,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		},
 		{
 			name: "密码错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -211,7 +211,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		},
 		{
 			name: "邮箱冲突",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(service.ErrUserDuplicate)
 				return userSvc, nil
@@ -230,7 +230,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		},
 		{
 			name: "系统异常",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(errors.New("其他任意系统异常"))
 				return userSvc, nil
@@ -276,7 +276,7 @@ func TestUserHandler_Login(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		mock       func(ctrl *gomock.Controller) (service.UserService, service.CodeService)
+		mock       func(ctrl *gomock.Controller) (service.IUserService, service.CodeService)
 		reqBuilder func(t *testing.T) *http.Request
 		setJWTErr  bool
 		wantCode   int
@@ -284,7 +284,7 @@ func TestUserHandler_Login(t *testing.T) {
 	}{
 		{
 			name: "登录成功",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
@@ -308,7 +308,7 @@ func TestUserHandler_Login(t *testing.T) {
 		},
 		{
 			name: "设置 JWT 报错",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
@@ -333,7 +333,7 @@ func TestUserHandler_Login(t *testing.T) {
 		},
 		{
 			name: "非 JSON 输入",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -350,7 +350,7 @@ func TestUserHandler_Login(t *testing.T) {
 		},
 		{
 			name: "用户名或密码不正确",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
@@ -374,7 +374,7 @@ func TestUserHandler_Login(t *testing.T) {
 		},
 		{
 			name: "系统错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
@@ -398,7 +398,7 @@ func TestUserHandler_Login(t *testing.T) {
 		},
 		{
 			name: "设置 JWT 异常",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
@@ -455,7 +455,7 @@ func TestUserHandler_Edit(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		mock       func(ctrl *gomock.Controller) (service.UserService, service.CodeService)
+		mock       func(ctrl *gomock.Controller) (service.IUserService, service.CodeService)
 		reqBuilder func(t *testing.T) *http.Request
 		userValid  bool
 		wantCode   int
@@ -463,7 +463,7 @@ func TestUserHandler_Edit(t *testing.T) {
 	}{
 		{
 			name: "编辑成功",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().EditProfile(gomock.Any(), gomock.Any()).Return(nil)
 				return userSvc, nil
@@ -483,7 +483,7 @@ func TestUserHandler_Edit(t *testing.T) {
 		},
 		{
 			name: "非 JSON 输入",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -501,7 +501,7 @@ func TestUserHandler_Edit(t *testing.T) {
 		},
 		{
 			name: "昵称字符数不符合",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -519,7 +519,7 @@ func TestUserHandler_Edit(t *testing.T) {
 		},
 		{
 			name: "昵称字符数不符合",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -537,7 +537,7 @@ func TestUserHandler_Edit(t *testing.T) {
 		},
 		{
 			name: "未登录",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -555,7 +555,7 @@ func TestUserHandler_Edit(t *testing.T) {
 		},
 		{
 			name: "更新失败",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().EditProfile(gomock.Any(), gomock.Any()).Return(errors.New("模拟错误"))
 				return userSvc, nil
@@ -608,7 +608,7 @@ func TestUserHandler_Profile(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		mock       func(ctrl *gomock.Controller) (service.UserService, service.CodeService)
+		mock       func(ctrl *gomock.Controller) (service.IUserService, service.CodeService)
 		reqBuilder func(t *testing.T) *http.Request
 		userValid  bool
 		wantCode   int
@@ -616,7 +616,7 @@ func TestUserHandler_Profile(t *testing.T) {
 	}{
 		{
 			name: "获取成功",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().QueryProfile(gomock.Any(), gomock.Any()).Return(domain.User{
 					Id:       1,
@@ -646,7 +646,7 @@ func TestUserHandler_Profile(t *testing.T) {
 		},
 		{
 			name: "未登录",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -663,7 +663,7 @@ func TestUserHandler_Profile(t *testing.T) {
 		},
 		{
 			name: "获取失败",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				userSvc.EXPECT().QueryProfile(gomock.Any(), gomock.Any()).Return(domain.User{}, errors.New("模拟错误"))
 				return userSvc, nil
@@ -715,14 +715,14 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		mock       func(ctrl *gomock.Controller) (service.UserService, service.CodeService)
+		mock       func(ctrl *gomock.Controller) (service.IUserService, service.CodeService)
 		reqBuilder func(t *testing.T) *http.Request
 		wantCode   int
 		wantBody   string
 	}{
 		{
 			name: "发送成功",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
@@ -744,7 +744,7 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 		},
 		{
 			name: "发送太频繁",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
@@ -766,7 +766,7 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 		},
 		{
 			name: "短信服务系统错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
@@ -788,7 +788,7 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 		},
 		{
 			name: "输入错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -805,7 +805,7 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 		},
 		{
 			name: "手机号格式错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -849,7 +849,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		mock       func(ctrl *gomock.Controller) (service.UserService, service.CodeService)
+		mock       func(ctrl *gomock.Controller) (service.IUserService, service.CodeService)
 		reqBuilder func(t *testing.T) *http.Request
 		setJWTErr  bool
 		wantCode   int
@@ -857,7 +857,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 	}{
 		{
 			name: "登录成功",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
@@ -880,7 +880,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		},
 		{
 			name: "验证码错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
@@ -902,7 +902,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		},
 		{
 			name: "短信服务系统错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
@@ -924,7 +924,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		},
 		{
 			name: "用户服务系统错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
@@ -947,7 +947,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		},
 		{
 			name: "输入错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -964,7 +964,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		},
 		{
 			name: "手机号格式错误",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				return nil, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
@@ -981,7 +981,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		},
 		{
 			name: "设置 jwt 报错",
-			mock: func(ctrl *gomock.Controller) (service.UserService, service.CodeService) {
+			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 

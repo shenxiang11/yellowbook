@@ -13,19 +13,27 @@ import (
 var ErrUserDuplicate = dao.ErrUserDuplicate
 var ErrUserNotFound = dao.ErrUserNotFound
 
-type UserRepository struct {
+type UserRepository interface {
+	FindByEmail(ctx context.Context, email string) (domain.User, error)
+	Create(ctx context.Context, u domain.User) error
+	UpdateProfile(ctx context.Context, u domain.Profile) error
+	QueryProfile(ctx context.Context, uid uint64) (domain.User, error)
+	FindByPhone(ctx context.Context, phone string) (domain.User, error)
+}
+
+type CachedUserRepository struct {
 	dao   *dao.UserDAO
 	cache *cache.UserCache
 }
 
-func NewUserRepository(dao *dao.UserDAO, cache *cache.UserCache) *UserRepository {
-	return &UserRepository{
+func NewCachedUserRepository(dao *dao.UserDAO, cache *cache.UserCache) UserRepository {
+	return &CachedUserRepository{
 		dao:   dao,
 		cache: cache,
 	}
 }
 
-func (r *UserRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
+func (r *CachedUserRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
 	u, err := r.dao.FindByEmail(ctx, email)
 	if err != nil {
 		return domain.User{}, err
@@ -39,7 +47,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (domain.
 	}, nil
 }
 
-func (r *UserRepository) Create(ctx context.Context, u domain.User) error {
+func (r *CachedUserRepository) Create(ctx context.Context, u domain.User) error {
 	return r.dao.Insert(ctx, dao.User{
 		Email: sql.NullString{
 			String: u.Email,
@@ -53,7 +61,7 @@ func (r *UserRepository) Create(ctx context.Context, u domain.User) error {
 	})
 }
 
-func (r *UserRepository) UpdateProfile(ctx context.Context, u domain.Profile) error {
+func (r *CachedUserRepository) UpdateProfile(ctx context.Context, u domain.Profile) error {
 	t, err := time.Parse("2006-01-02", u.Birthday)
 	if err != nil {
 		return err
@@ -62,7 +70,7 @@ func (r *UserRepository) UpdateProfile(ctx context.Context, u domain.Profile) er
 	// 为了一致性，删除对应的缓存
 	err = r.cache.Delete(ctx, u.UserId)
 	if err != nil {
-		log.Panicln("缓存删除失败：%v", err)
+		log.Printf("缓存删除失败：%v\n", err)
 	}
 
 	return r.dao.UpdateProfile(ctx, dao.UserProfile{
@@ -73,7 +81,7 @@ func (r *UserRepository) UpdateProfile(ctx context.Context, u domain.Profile) er
 	})
 }
 
-func (r *UserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.User, error) {
+func (r *CachedUserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.User, error) {
 	u, err := r.cache.Get(ctx, uid)
 	if err == nil {
 		return u, nil
@@ -104,7 +112,7 @@ func (r *UserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.U
 	return user, err
 }
 
-func (r *UserRepository) FindByPhone(ctx context.Context, phone string) (domain.User, error) {
+func (r *CachedUserRepository) FindByPhone(ctx context.Context, phone string) (domain.User, error) {
 	u, err := r.dao.FindByPhone(ctx, phone)
 	if err != nil {
 		return domain.User{}, err
@@ -116,7 +124,3 @@ func (r *UserRepository) FindByPhone(ctx context.Context, phone string) (domain.
 		Password: u.Password,
 	}, nil
 }
-
-//func (r UserRepository) FindById(ctx context.Context) domain.User {
-//
-//}

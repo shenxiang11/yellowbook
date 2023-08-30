@@ -12,7 +12,7 @@ import (
 )
 
 type UserHandler struct {
-	svc         service.UserService
+	svc         service.IUserService
 	codeSvs     service.CodeService
 	phoneExp    *regexp.Regexp
 	emailExp    *regexp.Regexp
@@ -23,7 +23,7 @@ type UserHandler struct {
 
 const biz = "login"
 
-func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserHandler {
+func NewUserHandler(svc service.IUserService, codeSvc service.CodeService) *UserHandler {
 	const (
 		emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
