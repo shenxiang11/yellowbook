@@ -1,29 +1,28 @@
 package web
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"strconv"
 )
 
-func getUserId(ctx *gin.Context) uint64 {
+var ErrCanNotGetUesrIdFromContext = errors.New("不能从上下文中获取用户id")
+
+func getUserId(ctx *gin.Context) (uint64, error) {
 	sid, ok := ctx.Get("UserId")
 	if !ok {
-		ctx.String(http.StatusOK, "系统错误")
-		return 0
+		return 0, ErrCanNotGetUesrIdFromContext
 	}
 
 	strId, ok := sid.(string)
 	if !ok {
-		ctx.String(http.StatusOK, "系统错误")
-		return 0
+		return 0, ErrCanNotGetUesrIdFromContext
 	}
 
 	userId, err := strconv.ParseUint(strId, 10, 64)
 	if err != nil {
-		ctx.String(http.StatusOK, "系统错误")
-		return 0
+		return 0, ErrCanNotGetUesrIdFromContext
 	}
 
-	return userId
+	return userId, nil
 }
