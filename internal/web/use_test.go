@@ -396,30 +396,6 @@ func TestUserHandler_Login(t *testing.T) {
 			wantCode: 500,
 			wantBody: `{"code":5,"msg":"系统错误","data":null}`,
 		},
-		{
-			name: "设置 JWT 异常",
-			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
-				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
-					domain.User{},
-					errors.New("系统错误"),
-				)
-
-				codeSvc := svcmocks.NewMockCodeService(ctrl)
-				return userSvc, codeSvc
-			},
-			reqBuilder: func(t *testing.T) *http.Request {
-				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "phone": "123456"}`))
-				req, err := http.NewRequest(http.MethodPost, loginUrl, body)
-				req.Header.Set("Content-Type", "application/json")
-				if err != nil {
-					t.Fatal(err)
-				}
-				return req
-			},
-			wantCode: 500,
-			wantBody: `{"code":5,"msg":"系统错误","data":null}`,
-		},
 	}
 
 	for _, tc := range testCases {
