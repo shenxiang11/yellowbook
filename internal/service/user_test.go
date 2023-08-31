@@ -288,7 +288,7 @@ func TestUserService_SignUp(t *testing.T) {
 		wantUser           domain.User
 	}{
 		{
-			name: "邮箱登录成功",
+			name: "邮箱注册成功",
 			mock: func(ctrl *gomock.Controller) repository.UserRepository {
 				repo := repomocks.NewMockUserRepository(ctrl)
 

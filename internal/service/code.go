@@ -18,6 +18,7 @@ var (
 type CodeService interface {
 	Send(ctx context.Context, biz string, phone string) error
 	Verify(ctx context.Context, biz string, phone string, code string) error
+	GenerateCode() string
 }
 
 type codeService struct {
@@ -33,7 +34,7 @@ func NewCodeService(repo repository.CodeRepository, smsSvc sms.Service) CodeServ
 }
 
 func (svc *codeService) Send(ctx context.Context, biz string, phone string) error {
-	code := svc.generateCode()
+	code := svc.GenerateCode()
 	err := svc.repo.Store(ctx, biz, phone, code)
 	if err != nil {
 		return err
@@ -55,7 +56,7 @@ func (svc *codeService) Verify(ctx context.Context, biz string, phone string, co
 	return svc.repo.Verify(ctx, biz, phone, code)
 }
 
-func (svc *codeService) generateCode() string {
+func (svc *codeService) GenerateCode() string {
 	num := rand.Intn(10000)
 	return fmt.Sprintf("%04d", num)
 }

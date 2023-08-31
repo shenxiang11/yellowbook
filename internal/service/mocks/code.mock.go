@@ -34,6 +34,20 @@ func (m *MockCodeService) EXPECT() *MockCodeServiceMockRecorder {
 	return m.recorder
 }
 
+// GenerateCode mocks base method.
+func (m *MockCodeService) GenerateCode() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateCode")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GenerateCode indicates an expected call of GenerateCode.
+func (mr *MockCodeServiceMockRecorder) GenerateCode() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateCode", reflect.TypeOf((*MockCodeService)(nil).GenerateCode))
+}
+
 // Send mocks base method.
 func (m *MockCodeService) Send(ctx context.Context, biz, phone string) error {
 	m.ctrl.T.Helper()
