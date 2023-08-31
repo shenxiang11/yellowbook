@@ -101,12 +101,15 @@ func TestUserService_Login(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := tc.mock(ctrl)
-			svc := NewUserService(repo)
 
-			if tc.compareHashAndPasswordErr == nil {
-				svc.compareHashAndPassword = func(hashedPassword []byte, password []byte) error {
+			var svc IUserService
+
+			if tc.compareHashAndPasswordErr != nil {
+				svc = NewUserService(repo)
+			} else {
+				svc = NewUserServiceForTest(repo, func(hashedPassword []byte, password []byte) error {
 					return nil
-				}
+				})
 			}
 
 			user, err := svc.Login(tc.ctx, tc.email, tc.password)

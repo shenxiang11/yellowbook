@@ -225,6 +225,15 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 }
 
 func (u *UserHandler) Profile(ctx *gin.Context) {
+	type Res struct {
+		UserId       uint64 `json:"user_id"`
+		Email        string `json:"email"`
+		Phone        string `json:"phone"`
+		Nickname     string `json:"nickname"`
+		Birthday     string `json:"birthday"`
+		Introduction string `json:"introduction"`
+	}
+
 	userId, err := u.getUserId(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, Result[any]{
@@ -242,8 +251,15 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, Result[domain.User]{
-		Data: user,
+	ctx.JSON(http.StatusOK, Result[Res]{
+		Data: Res{
+			UserId:       user.Id,
+			Email:        user.Email,
+			Phone:        user.Phone,
+			Nickname:     user.Profile.Nickname,
+			Birthday:     user.Profile.Birthday,
+			Introduction: user.Profile.Introduction,
+		},
 	})
 }
 

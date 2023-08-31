@@ -3,11 +3,12 @@ package ioc
 import (
 	"github.com/cloopen/go-sms-sdk/cloopen"
 	"yellowbook/internal/service/sms"
-	cloopen2 "yellowbook/internal/service/sms/cloopen"
+	"yellowbook/internal/service/sms/memory"
 )
 
 func InitSMSService(c *cloopen.Client) sms.Service {
-	return cloopen2.NewService(c)
+	//return cloopen2.NewService(c)
+	return memory.NewService()
 }
 
 func InitCloopen() *cloopen.Client {

@@ -140,7 +140,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		{
 			name: "注册成功",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(nil)
 
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
@@ -212,7 +212,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		{
 			name: "邮箱冲突",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(service.ErrUserDuplicate)
 				return userSvc, nil
 			},
@@ -231,7 +231,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		{
 			name: "系统异常",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().SignUp(gomock.Any(), gomock.Any()).Return(errors.New("其他任意系统异常"))
 				return userSvc, nil
 			},
@@ -285,7 +285,7 @@ func TestUserHandler_Login(t *testing.T) {
 		{
 			name: "登录成功",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
 					nil,
@@ -309,7 +309,7 @@ func TestUserHandler_Login(t *testing.T) {
 		{
 			name: "设置 JWT 报错",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
 					nil,
@@ -351,7 +351,7 @@ func TestUserHandler_Login(t *testing.T) {
 		{
 			name: "用户名或密码不正确",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
 					service.ErrInvalidUserOrPassword,
@@ -375,7 +375,7 @@ func TestUserHandler_Login(t *testing.T) {
 		{
 			name: "系统错误",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().Login(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					domain.User{},
 					errors.New("系统错误"),
@@ -440,7 +440,7 @@ func TestUserHandler_Edit(t *testing.T) {
 		{
 			name: "编辑成功",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().EditProfile(gomock.Any(), gomock.Any()).Return(nil)
 				return userSvc, nil
 			},
@@ -532,7 +532,7 @@ func TestUserHandler_Edit(t *testing.T) {
 		{
 			name: "更新失败",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().EditProfile(gomock.Any(), gomock.Any()).Return(errors.New("模拟错误"))
 				return userSvc, nil
 			},
@@ -593,7 +593,7 @@ func TestUserHandler_Profile(t *testing.T) {
 		{
 			name: "获取成功",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().QueryProfile(gomock.Any(), gomock.Any()).Return(domain.User{
 					Id:       1,
 					Email:    "863@qq.com",
@@ -618,7 +618,7 @@ func TestUserHandler_Profile(t *testing.T) {
 			},
 			userValid: true,
 			wantCode:  200,
-			wantBody:  `{"code":0,"msg":"","data":{"Id":1,"Email":"863@qq.com","Phone":"186","Password":"123456","Profile":{"UserId":1,"Nickname":"和黑","Birthday":"1993-12-11","Introduction":"我不想自我介绍"}}}`,
+			wantBody:  `{"code":0,"msg":"","data":{"user_id":1,"email":"863@qq.com","phone":"186","nickname":"和黑","birthday":"1993-12-11","introduction":"我不想自我介绍"}}`,
 		},
 		{
 			name: "未登录",
@@ -640,7 +640,7 @@ func TestUserHandler_Profile(t *testing.T) {
 		{
 			name: "获取失败",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				userSvc.EXPECT().QueryProfile(gomock.Any(), gomock.Any()).Return(domain.User{}, errors.New("模拟错误"))
 				return userSvc, nil
 			},
@@ -699,7 +699,7 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 		{
 			name: "发送成功",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				codeSvc.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -721,7 +721,7 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 		{
 			name: "发送太频繁",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				codeSvc.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Return(service.ErrCodeSendTooMany)
@@ -743,7 +743,7 @@ func TestUserHandler_SendLoginSMSCode(t *testing.T) {
 		{
 			name: "短信服务系统错误",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				codeSvc.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("模拟错误"))
@@ -834,7 +834,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		{
 			name: "登录成功",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				userSvc.EXPECT().FindOrCreate(gomock.Any(), gomock.Any()).Return(domain.User{Id: 1}, nil)
@@ -857,7 +857,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		{
 			name: "验证码错误",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				codeSvc.EXPECT().Verify(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(service.ErrCodeVerifyFailed)
@@ -879,7 +879,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		{
 			name: "短信服务系统错误",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				codeSvc.EXPECT().Verify(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("模拟错误"))
@@ -901,7 +901,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		{
 			name: "用户服务系统错误",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				userSvc.EXPECT().FindOrCreate(gomock.Any(), gomock.Any()).Return(domain.User{}, errors.New("模拟错误"))
@@ -958,7 +958,7 @@ func TestUserHandler_LoginSMS(t *testing.T) {
 		{
 			name: "设置 jwt 报错",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				userSvc := svcmocks.NewMockUserService(ctrl)
+				userSvc := svcmocks.NewMockIUserService(ctrl)
 				codeSvc := svcmocks.NewMockCodeService(ctrl)
 
 				userSvc.EXPECT().FindOrCreate(gomock.Any(), gomock.Any()).Return(domain.User{Id: 1}, nil)

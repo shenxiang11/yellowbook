@@ -19,7 +19,7 @@ func InitWebServer() *gin.Engine {
 	wire.Build(
 		web.NewUserHandler,
 		service.NewUserService,
-		repository.NewUserRepository,
+		repository.NewCachedUserRepository,
 		dao.NewUserDAO,
 		cache.NewUserCache,
 		service.NewCodeService,

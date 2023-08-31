@@ -19,6 +19,7 @@ type IUserService interface {
 	EditProfile(ctx context.Context, u domain.Profile) error
 	QueryProfile(ctx context.Context, userId uint64) (domain.User, error)
 	FindOrCreate(ctx context.Context, phone string) (domain.User, error)
+	CompareHashAndPassword(hashedPassword []byte, password []byte) error
 }
 
 type UserService struct {
@@ -26,10 +27,17 @@ type UserService struct {
 	compareHashAndPassword func(hashedPassword []byte, password []byte) error
 }
 
-func NewUserService(repo repository.UserRepository) *UserService {
+func NewUserService(repo repository.UserRepository) IUserService {
 	return &UserService{
 		repo:                   repo,
 		compareHashAndPassword: bcrypt.CompareHashAndPassword,
+	}
+}
+
+func NewUserServiceForTest(repo repository.UserRepository, compareHashAndPassword func(hashedPassword []byte, password []byte) error) IUserService {
+	return &UserService{
+		repo:                   repo,
+		compareHashAndPassword: compareHashAndPassword,
 	}
 }
 
@@ -81,4 +89,8 @@ func (svc *UserService) FindOrCreate(ctx context.Context, phone string) (domain.
 	}
 
 	return svc.repo.FindByPhone(ctx, phone)
+}
+
+func (svc *UserService) CompareHashAndPassword(hashedPassword []byte, password []byte) error {
+	return svc.compareHashAndPassword(hashedPassword, password)
 }
