@@ -348,5 +348,76 @@ func TestUserService_SignUp(t *testing.T) {
 }
 
 func TestUserService_FindOrCreate(t *testing.T) {
+	testCases := []struct {
+		name     string
+		mock     func(ctrl *gomock.Controller) repository.UserRepository
+		phone    string
+		wantUser domain.User
+		wantErr  error
+	}{
+		{
+			name: "用户存在，查询成功",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+				repo.EXPECT().FindByPhone(context.Background(), gomock.Any()).
+					Return(domain.User{Id: 1}, nil)
+				return repo
+			},
+			phone:    "13800000000",
+			wantUser: domain.User{Id: 1},
+		},
+		{
+			name: "用户不存在，创建失败",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+				repo.EXPECT().FindByPhone(gomock.Any(), gomock.Any()).
+					Return(domain.User{}, repository.ErrUserNotFound)
+				repo.EXPECT().Create(gomock.Any(), gomock.Any()).
+					Return(errors.New("模拟错误"))
+				return repo
+			},
+			phone:   "13800000000",
+			wantErr: errors.New("模拟错误"),
+		},
+		{
+			name: "用户不存在，创建成功，再次查找",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+				repo.EXPECT().FindByPhone(gomock.Any(), gomock.Any()).
+					Return(domain.User{}, repository.ErrUserNotFound)
+				repo.EXPECT().Create(gomock.Any(), gomock.Any()).
+					Return(nil)
+				repo.EXPECT().FindByPhone(gomock.Any(), gomock.Any()).
+					Return(domain.User{
+						Id:       1,
+						Email:    "any",
+						Phone:    "13800000000",
+						Password: "123456",
+					}, nil)
+				return repo
+			},
+			phone: "13800000000",
+			wantUser: domain.User{
+				Id:       1,
+				Email:    "any",
+				Phone:    "13800000000",
+				Password: "123456",
+			},
+		},
+	}
 
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			repo := tc.mock(ctrl)
+
+			svc := NewUserService(repo)
+
+			user, err := svc.FindOrCreate(context.Background(), tc.phone)
+			assert.Equal(t, err, tc.wantErr)
+			assert.Equal(t, user, tc.wantUser)
+		})
+	}
 }
