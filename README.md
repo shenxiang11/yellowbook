@@ -1,3 +1,7 @@
+## 小黄书
+
+[![codecov](https://codecov.io/gh/shenxiang11/yellowbook/graph/badge.svg?token=7P8ASLSAFS)](https://codecov.io/gh/shenxiang11/yellowbook)
+
 ## mockgen 命令
 
 ```shell
