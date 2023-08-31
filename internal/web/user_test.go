@@ -147,7 +147,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 				return userSvc, codeSvc
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
-				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "phone": "hello@world#123"}`))
+				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "hello@world#123"}`))
 				req, err := http.NewRequest(http.MethodPost, signUpUrl, body)
 				req.Header.Set("Content-Type", "application/json")
 				if err != nil {
@@ -217,7 +217,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 				return userSvc, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
-				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "phone": "hello@world#123"}`))
+				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "hello@world#123"}`))
 				req, err := http.NewRequest(http.MethodPost, signUpUrl, body)
 				req.Header.Set("Content-Type", "application/json")
 				if err != nil {
@@ -236,7 +236,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 				return userSvc, nil
 			},
 			reqBuilder: func(t *testing.T) *http.Request {
-				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "phone": "hello@world#123"}`))
+				body := bytes.NewBuffer([]byte(`{"email": "any@qq.com", "password": "hello@world#123"}`))
 				req, err := http.NewRequest(http.MethodPost, signUpUrl, body)
 				req.Header.Set("Content-Type", "application/json")
 				if err != nil {

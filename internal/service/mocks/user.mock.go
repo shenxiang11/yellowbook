@@ -36,17 +36,17 @@ func (m *MockIUserService) EXPECT() *MockIUserServiceMockRecorder {
 }
 
 // CompareHashAndPassword mocks base method.
-func (m *MockIUserService) CompareHashAndPassword(hashedPassword, password []byte) error {
+func (m *MockIUserService) CompareHashAndPassword(ctx context.Context, hashedPassword, password []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CompareHashAndPassword", hashedPassword, password)
+	ret := m.ctrl.Call(m, "CompareHashAndPassword", ctx, hashedPassword, password)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CompareHashAndPassword indicates an expected call of CompareHashAndPassword.
-func (mr *MockIUserServiceMockRecorder) CompareHashAndPassword(hashedPassword, password interface{}) *gomock.Call {
+func (mr *MockIUserServiceMockRecorder) CompareHashAndPassword(ctx, hashedPassword, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompareHashAndPassword", reflect.TypeOf((*MockIUserService)(nil).CompareHashAndPassword), hashedPassword, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompareHashAndPassword", reflect.TypeOf((*MockIUserService)(nil).CompareHashAndPassword), ctx, hashedPassword, password)
 }
 
 // EditProfile mocks base method.
@@ -76,6 +76,21 @@ func (m *MockIUserService) FindOrCreate(ctx context.Context, phone string) (doma
 func (mr *MockIUserServiceMockRecorder) FindOrCreate(ctx, phone interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOrCreate", reflect.TypeOf((*MockIUserService)(nil).FindOrCreate), ctx, phone)
+}
+
+// GenerateFromPassword mocks base method.
+func (m *MockIUserService) GenerateFromPassword(ctx context.Context, password []byte) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateFromPassword", ctx, password)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateFromPassword indicates an expected call of GenerateFromPassword.
+func (mr *MockIUserServiceMockRecorder) GenerateFromPassword(ctx, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateFromPassword", reflect.TypeOf((*MockIUserService)(nil).GenerateFromPassword), ctx, password)
 }
 
 // Login mocks base method.

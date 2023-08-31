@@ -57,7 +57,7 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 func (u *UserHandler) SignUp(ctx *gin.Context) {
 	type SignUpReq struct {
 		Email    string `json:"email"`
-		Password string `json:"phone"`
+		Password string `json:"password"`
 	}
 
 	var req SignUpReq
@@ -122,7 +122,7 @@ type UserClaims struct {
 func (u *UserHandler) Login(ctx *gin.Context) {
 	type LoginReq struct {
 		Email    string `json:"email"`
-		Password string `json:"phone"`
+		Password string `json:"password"`
 	}
 
 	var req LoginReq

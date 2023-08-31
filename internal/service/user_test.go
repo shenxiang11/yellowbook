@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"golang.org/x/crypto/bcrypt"
 	"testing"
 	"yellowbook/internal/domain"
 	"yellowbook/internal/repository"
@@ -109,6 +111,8 @@ func TestUserService_Login(t *testing.T) {
 			} else {
 				svc = NewUserServiceForTest(repo, func(hashedPassword []byte, password []byte) error {
 					return nil
+				}, func(password []byte, cost int) ([]byte, error) {
+					return bcrypt.GenerateFromPassword(password, cost)
 				})
 			}
 
@@ -190,4 +194,159 @@ func TestUserService_EditProfile(t *testing.T) {
 			assert.Equal(t, err, tc.wantErr)
 		})
 	}
+}
+
+func TestUserService_CompareHashAndPassword(t *testing.T) {
+	testCases := []struct {
+		name     string
+		mock     func(ctrl *gomock.Controller) repository.UserRepository
+		hash     []byte
+		password []byte
+		wantErr  error
+	}{
+		{
+			name: "密码正确",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+				return repo
+			},
+			hash:     []byte("$2a$10$Rpn7CTskQtFCovsAjox7SOYUpzQA9Z29oLs7LIO/6YOPN90dr.EV2"),
+			password: []byte("hello#world@123"),
+		},
+		{
+			name: "密码错误",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+				return repo
+			},
+			hash:     []byte("$2a$10$Rpn7CTskQtFCovsAjox7SOYUpzQA9Z29oLs7LIO/6YOPN90dr.EV2"),
+			password: []byte("hello#world@1234"),
+			wantErr:  bcrypt.ErrMismatchedHashAndPassword,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			repo := tc.mock(ctrl)
+			svc := NewUserService(repo)
+
+			err := svc.CompareHashAndPassword(context.Background(), tc.hash, tc.password)
+			assert.Equal(t, err, tc.wantErr)
+		})
+	}
+}
+
+func TestUserService_GenerateFromPassword(t *testing.T) {
+	testCases := []struct {
+		name     string
+		mock     func(ctrl *gomock.Controller) repository.UserRepository
+		hash     []byte
+		password []byte
+		wantHash []byte
+	}{
+		{
+			name: "密码加密",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+				return repo
+			},
+			password: []byte("hello#world@123"),
+			wantHash: []byte("xyz"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			repo := tc.mock(ctrl)
+			svc := NewUserServiceForTest(repo, func(hashedPassword []byte, password []byte) error {
+				return nil
+			}, func(password []byte, cost int) ([]byte, error) {
+				return []byte("xyz"), nil
+			})
+
+			hash, err := svc.GenerateFromPassword(context.Background(), tc.password)
+			require.NoError(t, err)
+			assert.Equal(t, hash, tc.wantHash)
+		})
+	}
+}
+
+func TestUserService_SignUp(t *testing.T) {
+	testCases := []struct {
+		name               string
+		mock               func(ctrl *gomock.Controller) repository.UserRepository
+		generatePasswordFn func(password []byte, cost int) ([]byte, error)
+		comparePasswordFn  func(hashedPassword []byte, password []byte) error
+		user               domain.User
+		wantErr            error
+		wantUser           domain.User
+	}{
+		{
+			name: "邮箱登录成功",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+
+				repo.EXPECT().Create(context.Background(), gomock.Any()).
+					Return(nil)
+
+				return repo
+			},
+			generatePasswordFn: func(password []byte, cost int) ([]byte, error) {
+				return []byte("123456"), nil
+			},
+			comparePasswordFn: func(hashedPassword []byte, password []byte) error {
+				return nil
+			},
+			user: domain.User{
+				Id:       1,
+				Email:    "email",
+				Phone:    "phone",
+				Password: "password",
+			},
+		},
+		{
+			name: "生成密码错误",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+				return repo
+			},
+			generatePasswordFn: func(password []byte, cost int) ([]byte, error) {
+				return []byte(""), ErrGeneratePassword
+			},
+			comparePasswordFn: func(hashedPassword []byte, password []byte) error {
+				return nil
+			},
+			user: domain.User{
+				Id:       1,
+				Email:    "email",
+				Phone:    "phone",
+				Password: "password",
+			},
+			wantErr: ErrGeneratePassword,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			repo := tc.mock(ctrl)
+
+			svc := NewUserServiceForTest(repo, tc.comparePasswordFn, tc.generatePasswordFn)
+
+			err := svc.SignUp(context.Background(), tc.user)
+			assert.Equal(t, err, tc.wantErr)
+		})
+	}
+}
+
+func TestUserService_FindOrCreate(t *testing.T) {
+
 }

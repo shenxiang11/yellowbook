@@ -11,6 +11,7 @@ import (
 var (
 	ErrUserDuplicate         = repository.ErrUserDuplicate
 	ErrInvalidUserOrPassword = errors.New("账号、邮箱或密码不正确")
+	ErrGeneratePassword      = errors.New("生成密码报错")
 )
 
 type IUserService interface {
@@ -19,25 +20,33 @@ type IUserService interface {
 	EditProfile(ctx context.Context, u domain.Profile) error
 	QueryProfile(ctx context.Context, userId uint64) (domain.User, error)
 	FindOrCreate(ctx context.Context, phone string) (domain.User, error)
-	CompareHashAndPassword(hashedPassword []byte, password []byte) error
+	CompareHashAndPassword(ctx context.Context, hashedPassword []byte, password []byte) error
+	GenerateFromPassword(ctx context.Context, password []byte) ([]byte, error)
 }
 
 type UserService struct {
 	repo                   repository.UserRepository
 	compareHashAndPassword func(hashedPassword []byte, password []byte) error
+	generateFromPassword   func(password []byte, cost int) ([]byte, error)
 }
 
 func NewUserService(repo repository.UserRepository) IUserService {
 	return &UserService{
 		repo:                   repo,
 		compareHashAndPassword: bcrypt.CompareHashAndPassword,
+		generateFromPassword:   bcrypt.GenerateFromPassword,
 	}
 }
 
-func NewUserServiceForTest(repo repository.UserRepository, compareHashAndPassword func(hashedPassword []byte, password []byte) error) IUserService {
+func NewUserServiceForTest(
+	repo repository.UserRepository,
+	compareHashAndPassword func(hashedPassword []byte, password []byte) error,
+	generateFromPassword func(password []byte, cost int) ([]byte, error),
+) IUserService {
 	return &UserService{
 		repo:                   repo,
 		compareHashAndPassword: compareHashAndPassword,
+		generateFromPassword:   generateFromPassword,
 	}
 }
 
@@ -50,7 +59,7 @@ func (svc *UserService) Login(ctx context.Context, email string, password string
 		return domain.User{}, err
 	}
 
-	err = svc.compareHashAndPassword([]byte(u.Password), []byte(password))
+	err = svc.CompareHashAndPassword(ctx, []byte(u.Password), []byte(password))
 	if err != nil {
 		return domain.User{}, ErrInvalidUserOrPassword
 	}
@@ -59,9 +68,9 @@ func (svc *UserService) Login(ctx context.Context, email string, password string
 }
 
 func (svc *UserService) SignUp(ctx context.Context, u domain.User) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	hash, err := svc.GenerateFromPassword(ctx, []byte(u.Password))
 	if err != nil {
-		return err
+		return ErrGeneratePassword
 	}
 	u.Password = string(hash)
 
@@ -91,6 +100,10 @@ func (svc *UserService) FindOrCreate(ctx context.Context, phone string) (domain.
 	return svc.repo.FindByPhone(ctx, phone)
 }
 
-func (svc *UserService) CompareHashAndPassword(hashedPassword []byte, password []byte) error {
+func (svc *UserService) CompareHashAndPassword(ctx context.Context, hashedPassword []byte, password []byte) error {
 	return svc.compareHashAndPassword(hashedPassword, password)
+}
+
+func (svc *UserService) GenerateFromPassword(ctx context.Context, password []byte) ([]byte, error) {
+	return svc.generateFromPassword(password, bcrypt.DefaultCost)
 }
