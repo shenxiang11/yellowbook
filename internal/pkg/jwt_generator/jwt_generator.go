@@ -16,7 +16,7 @@ type JWTGenerator struct {
 	nowFunc    func() time.Time
 }
 
-func NewJWTGenerator(issuer string, privateKey string) IJWTGenerator {
+func NewJWTGenerator(issuer string, privateKey string) *JWTGenerator {
 	pk, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKey))
 	if err != nil {
 		panic("cannot parse private key")
