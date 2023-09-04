@@ -20,7 +20,6 @@ type UserHandler struct {
 	phoneExp    *regexp.Regexp
 	emailExp    *regexp.Regexp
 	passwordExp *regexp.Regexp
-	getUserId   func(ctx *gin.Context) (uint64, error)
 	jwt         jwt_generator.IJWTGenerator
 }
 
@@ -43,7 +42,6 @@ func NewUserHandler(svc service.IUserService, codeSvc service.CodeService, jwt j
 		emailExp:    emailExp,
 		passwordExp: passwordExp,
 		phoneExp:    phoneExp,
-		getUserId:   getUserId,
 		jwt:         jwt,
 	}
 }
@@ -199,16 +197,9 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := u.getUserId(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, Result[any]{
-			Code: 4,
-			Msg:  "未登录",
-		})
-		return
-	}
+	userId := ctx.GetUint64("UserId")
 
-	err = u.svc.EditProfile(ctx, domain.Profile{
+	err := u.svc.EditProfile(ctx, domain.Profile{
 		UserId:       userId,
 		Nickname:     req.Nickname,
 		Birthday:     req.Birthday,
@@ -237,13 +228,7 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 		Introduction string `json:"introduction"`
 	}
 
-	userId, err := u.getUserId(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, Result[any]{
-			Code: 4,
-			Msg:  "未登录",
-		})
-	}
+	userId := ctx.GetUint64("UserId")
 
 	user, err := u.svc.QueryProfile(ctx, userId)
 	if err != nil {

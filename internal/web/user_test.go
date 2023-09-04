@@ -516,24 +516,6 @@ func TestUserHandler_Edit(t *testing.T) {
 			wantBody:  `{"code":4,"msg":"简介不能多余 100 个字符数","data":null}`,
 		},
 		{
-			name: "未登录",
-			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				return nil, nil
-			},
-			reqBuilder: func(t *testing.T) *http.Request {
-				body := bytes.NewBuffer([]byte(`{"nickname": "any@qq.com", "birthday": "1993-11-11", "introduction": "我很懒惰不想介绍"}`))
-				req, err := http.NewRequest(http.MethodPost, url, body)
-				req.Header.Set("Content-Type", "application/json")
-				if err != nil {
-					t.Fatal(err)
-				}
-				return req
-			},
-			userValid: false,
-			wantCode:  401,
-			wantBody:  `{"code":4,"msg":"未登录","data":null}`,
-		},
-		{
 			name: "更新失败",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockIUserService(ctrl)
@@ -562,12 +544,6 @@ func TestUserHandler_Edit(t *testing.T) {
 
 			userSvc, codeSvc := tc.mock(ctrl)
 			handler := NewUserHandler(userSvc, codeSvc, nil)
-
-			if tc.userValid {
-				handler.getUserId = func(ctx *gin.Context) (uint64, error) {
-					return 1, nil
-				}
-			}
 
 			server := gin.Default()
 			handler.RegisterRoutes(server.Group("/users"))
@@ -625,23 +601,6 @@ func TestUserHandler_Profile(t *testing.T) {
 			wantBody:  `{"code":0,"msg":"","data":{"user_id":1,"email":"863@qq.com","phone":"186","nickname":"和黑","birthday":"1993-12-11","introduction":"我不想自我介绍"}}`,
 		},
 		{
-			name: "未登录",
-			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
-				return nil, nil
-			},
-			reqBuilder: func(t *testing.T) *http.Request {
-				req, err := http.NewRequest(http.MethodGet, url, nil)
-				req.Header.Set("Content-Type", "application/json")
-				if err != nil {
-					t.Fatal(err)
-				}
-				return req
-			},
-			userValid: false,
-			wantCode:  401,
-			wantBody:  `{"code":4,"msg":"未登录","data":null}`,
-		},
-		{
 			name: "获取失败",
 			mock: func(ctrl *gomock.Controller) (service.IUserService, service.CodeService) {
 				userSvc := svcmocks.NewMockIUserService(ctrl)
@@ -669,12 +628,6 @@ func TestUserHandler_Profile(t *testing.T) {
 
 			userSvc, codeSvc := tc.mock(ctrl)
 			handler := NewUserHandler(userSvc, codeSvc, nil)
-
-			if tc.userValid {
-				handler.getUserId = func(ctx *gin.Context) (uint64, error) {
-					return 1, nil
-				}
-			}
 
 			server := gin.Default()
 			handler.RegisterRoutes(server.Group("/users"))

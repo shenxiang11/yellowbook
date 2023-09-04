@@ -88,6 +88,9 @@ func (r *CachedUserRepository) QueryProfile(ctx context.Context, uid uint64) (do
 	}
 
 	ue, err := r.dao.FindProfileByUserId(ctx, uid)
+	if err != nil {
+		return domain.User{}, err
+	}
 
 	var user domain.User
 	user.Id = ue.Id
