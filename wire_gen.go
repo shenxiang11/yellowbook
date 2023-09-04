@@ -32,7 +32,8 @@ func InitWebServer() *gin.Engine {
 	client := ioc.InitCloopen()
 	smsService := ioc.InitSMSService(client)
 	codeService := service.NewCodeService(codeRepository, smsService)
-	userHandler := web.NewUserHandler(iUserService, codeService)
+	ijwtGenerator := ioc.InitJWT()
+	userHandler := web.NewUserHandler(iUserService, codeService, ijwtGenerator)
 	engine := ioc.InitWebServer(userHandler)
 	return engine
 }

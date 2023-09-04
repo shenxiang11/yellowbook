@@ -1,12 +1,6 @@
-package web
+package ioc
 
-import (
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"strconv"
-	"time"
-	"yellowbook/internal/domain"
-)
+import "yellowbook/internal/pkg/jwt_generator"
 
 const privateKey = `-----BEGIN PRIVATE KEY-----
 MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAM4mGAmHL4VfZqjq
@@ -26,22 +20,9 @@ S/t+zcNA/uwSyGOP+zXIL2+WBC1tsKvuNyM5YX5yWU6hiGKFmd6LYgA9yWkyBtcl
 -----END PRIVATE KEY-----
 `
 
-func setJWTToken(ctx *gin.Context, user domain.User) error {
-	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKey))
-	if err != nil {
-		return err
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodRS512, jwt.RegisteredClaims{
-		Issuer:    "yellowbook",
-		Subject:   strconv.FormatUint(user.Id, 10),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 10)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-	})
-	tokenStr, err := token.SignedString(key)
-	if err != nil {
-		return err
-	}
-
-	ctx.Header("X-Jwt-Token", tokenStr)
-	return nil
+func InitJWT() jwt_generator.IJWTGenerator {
+	return jwt_generator.NewJWTGenerator(
+		"yellobook",
+		privateKey,
+	)
 }

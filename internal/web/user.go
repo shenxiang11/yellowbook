@@ -6,8 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
+	"strconv"
+	"time"
 	"unicode/utf8"
 	"yellowbook/internal/domain"
+	"yellowbook/internal/pkg/jwt_generator"
 	"yellowbook/internal/service"
 )
 
@@ -18,12 +21,12 @@ type UserHandler struct {
 	emailExp    *regexp.Regexp
 	passwordExp *regexp.Regexp
 	getUserId   func(ctx *gin.Context) (uint64, error)
-	setJWTToken func(ctx *gin.Context, user domain.User) error
+	jwt         jwt_generator.IJWTGenerator
 }
 
 const biz = "login"
 
-func NewUserHandler(svc service.IUserService, codeSvc service.CodeService) *UserHandler {
+func NewUserHandler(svc service.IUserService, codeSvc service.CodeService, jwt jwt_generator.IJWTGenerator) *UserHandler {
 	const (
 		emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
@@ -41,7 +44,7 @@ func NewUserHandler(svc service.IUserService, codeSvc service.CodeService) *User
 		passwordExp: passwordExp,
 		phoneExp:    phoneExp,
 		getUserId:   getUserId,
-		setJWTToken: setJWTToken,
+		jwt:         jwt,
 	}
 }
 
@@ -362,4 +365,15 @@ func (u *UserHandler) LoginSMS(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, Result[any]{
 		Msg: "验证成功",
 	})
+}
+
+func (u *UserHandler) setJWTToken(ctx *gin.Context, user domain.User) error {
+	tokenStr, err := u.jwt.Generate(strconv.FormatUint(user.Id, 10), time.Minute*10)
+
+	if err != nil {
+		return err
+	}
+
+	ctx.Header("X-Jwt-Token", tokenStr)
+	return nil
 }

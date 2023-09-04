@@ -32,6 +32,7 @@ func InitWebServer() *gin.Engine {
 		ioc.InitDB,
 		ioc.InitRedis,
 		ioc.InitCloopen,
+		ioc.InitJWT,
 	)
 	return new(gin.Engine)
 }
