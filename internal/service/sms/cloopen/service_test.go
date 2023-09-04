@@ -1,6 +1,6 @@
 package cloopen
 
-// 真的会发短信，所以注释掉吧
+// 真的会发短信，单元测试时注释掉
 
 //func TestCloopen(t *testing.T) {
 //	cfg := cloopen.DefaultConfig().
