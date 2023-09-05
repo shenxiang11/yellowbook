@@ -25,9 +25,6 @@ jobs:
       - name: Build
         run: go build -v ./...
 
-      - name: MySql
-        uses: docker://mysql:8.0.29
-
       - name: Test
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
