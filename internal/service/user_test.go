@@ -421,3 +421,46 @@ func TestUserService_FindOrCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestUserService_QueryUsers(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mock      func(ctrl *gomock.Controller) repository.UserRepository
+		wantErr   error
+		wantTotal int64
+		wantUsers []domain.User
+	}{
+		{
+			name: "查询",
+			mock: func(ctrl *gomock.Controller) repository.UserRepository {
+				repo := repomocks.NewMockUserRepository(ctrl)
+
+				repo.EXPECT().QueryUsers(gomock.Any(), gomock.Any(), gomock.Any()).Return([]domain.User{
+					{Email: "1"},
+					{Email: "2"},
+				}, int64(2), nil)
+				return repo
+			},
+			wantTotal: int64(2),
+			wantUsers: []domain.User{
+				{Email: "1"},
+				{Email: "2"},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			repo := tc.mock(ctrl)
+			svc := NewUserService(repo)
+
+			users, total, err := svc.QueryUsers(context.Background(), 1, 10)
+			assert.Equal(t, err, tc.wantErr)
+			assert.Equal(t, total, tc.wantTotal)
+			assert.Equal(t, users, tc.wantUsers)
+		})
+	}
+}
