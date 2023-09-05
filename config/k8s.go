@@ -6,6 +6,7 @@ var Conf = &Config{
 	Web: GinConfig{
 		Port: ":8081",
 	},
+	Manage: GinConfig{Port: ":9090"},
 	DB: DBConfig{
 		DSN: "root:123456@tcp(yellowbook-mysql:3308)/yellowbook",
 	},

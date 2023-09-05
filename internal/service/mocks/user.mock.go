@@ -123,6 +123,21 @@ func (mr *MockIUserServiceMockRecorder) QueryProfile(ctx, userId interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryProfile", reflect.TypeOf((*MockIUserService)(nil).QueryProfile), ctx, userId)
 }
 
+// QueryUsers mocks base method.
+func (m *MockIUserService) QueryUsers(ctx context.Context, page, pageSize int) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueryUsers", ctx, page, pageSize)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueryUsers indicates an expected call of QueryUsers.
+func (mr *MockIUserServiceMockRecorder) QueryUsers(ctx, page, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryUsers", reflect.TypeOf((*MockIUserService)(nil).QueryUsers), ctx, page, pageSize)
+}
+
 // SignUp mocks base method.
 func (m *MockIUserService) SignUp(ctx context.Context, u domain.User) error {
 	m.ctrl.T.Helper()

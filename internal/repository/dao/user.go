@@ -7,6 +7,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 	"time"
+	"yellowbook/internal/pkg/paginate"
 )
 
 var ErrUserDuplicate = errors.New("用户冲突")
@@ -84,6 +85,21 @@ func (dao *UserDAO) FindByPhone(ctx context.Context, phone string) (User, error)
 	}
 
 	return user, nil
+}
+
+func (dao *UserDAO) QueryUsers(ctx context.Context, page int, pageSize int) ([]User, int64, error) {
+	var users []User
+
+	var total int64
+	dao.db.WithContext(ctx).Model(&User{}).Count(&total)
+
+	err := dao.db.WithContext(ctx).Scopes(paginate.Paginate(page, pageSize)).Preload("Profile").Find(&users).Error
+
+	if err != nil {
+		return []User{}, 0, err
+	}
+
+	return users, total, nil
 }
 
 type User struct {

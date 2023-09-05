@@ -5,6 +5,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,7 +14,7 @@ type LoginMiddlewareBuilder struct {
 	paths []string
 }
 
-func NewLoinMiddlewareBuilder() *LoginMiddlewareBuilder {
+func NewLoginMiddlewareBuilder() *LoginMiddlewareBuilder {
 	return &LoginMiddlewareBuilder{}
 }
 
@@ -87,6 +88,12 @@ GcQaucz8O9XyFZkWJwIDAQAB
 			ctx.Header("X-Jwt-Token", tokenStr)
 		}
 
-		ctx.Set("UserId", sid)
+		uid, err := strconv.ParseUint(sid, 10, 64)
+		if err != nil {
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		ctx.Set("UserId", uid)
 	}
 }

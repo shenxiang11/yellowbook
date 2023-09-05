@@ -12,6 +12,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/wire v0.5.0
 	github.com/redis/go-redis/v9 v9.1.0
+	github.com/shenxiang11/zippo v0.0.0-20230904102615-492a502750e4
 	github.com/stretchr/testify v1.8.3
 	github.com/swaggo/swag v1.16.1
 	go.uber.org/mock v0.2.0

@@ -1,10 +1,14 @@
 package domain
 
+import "time"
+
 type User struct {
-	Id       uint64
-	Email    string
-	Phone    string
-	Password string
+	Id         uint64
+	Email      string
+	Phone      string
+	Password   string
+	CreateTime time.Time
+	UpdateTime time.Time
 	// 用户信息，为注册后用户补充
 	Profile *Profile
 }
@@ -14,4 +18,6 @@ type Profile struct {
 	Nickname     string
 	Birthday     string
 	Introduction string
+	CreateTime   time.Time
+	UpdateTime   time.Time
 }

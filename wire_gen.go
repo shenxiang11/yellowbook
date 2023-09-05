@@ -8,6 +8,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"yellowbook/internal/manage"
 	"yellowbook/internal/repository"
 	"yellowbook/internal/repository/cache"
 	"yellowbook/internal/repository/cache/ristretto"
@@ -35,5 +36,17 @@ func InitWebServer() *gin.Engine {
 	ijwtGenerator := ioc.InitJWT()
 	userHandler := web.NewUserHandler(iUserService, codeService, ijwtGenerator)
 	engine := ioc.InitWebServer(userHandler)
+	return engine
+}
+
+func InitManageServer() *gin.Engine {
+	db := ioc.InitDB()
+	userDAO := dao.NewUserDAO(db)
+	cmdable := ioc.InitRedis()
+	userCache := cache.NewUserCache(cmdable)
+	userRepository := repository.NewCachedUserRepository(userDAO, userCache)
+	iUserService := service.NewUserService(userRepository)
+	userHandler := manage.NewUserHandler(iUserService)
+	engine := ioc.InitManageServer(userHandler)
 	return engine
 }

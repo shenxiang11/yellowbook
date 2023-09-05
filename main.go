@@ -11,15 +11,30 @@ import (
 )
 
 func main() {
-	engine := InitWebServer()
+	webEngine := InitWebServer()
+	manageEngine := InitManageServer()
 
-	server := &http.Server{
+	webServer := &http.Server{
 		Addr:    config.Conf.Web.Port,
-		Handler: engine,
+		Handler: webEngine,
+	}
+
+	manageServer := &http.Server{
+		Addr:    config.Conf.Manage.Port,
+		Handler: manageEngine,
 	}
 
 	go func() {
-		err := server.ListenAndServe()
+		err := webServer.ListenAndServe()
+		if err != nil {
+			// 优雅退出不能写 panic
+			// panic(err)
+			log.Println("Server err: ", err)
+		}
+	}()
+
+	go func() {
+		err := manageServer.ListenAndServe()
 		if err != nil {
 			// 优雅退出不能写 panic
 			// panic(err)
@@ -31,7 +46,11 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	<-quit
 
-	if err := server.Shutdown(context.Background()); err != nil {
-		log.Fatal("Server shutdown failed:", err)
+	if err := webServer.Shutdown(context.Background()); err != nil {
+		log.Fatal("web server shutdown failed:", err)
+	}
+
+	if err := manageServer.Shutdown(context.Background()); err != nil {
+		log.Fatal("manage server shutdown failed:", err)
 	}
 }

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"github.com/shenxiang11/zippo/slice"
 	"log"
 	"time"
 	"yellowbook/internal/domain"
@@ -19,6 +20,7 @@ type UserRepository interface {
 	UpdateProfile(ctx context.Context, u domain.Profile) error
 	QueryProfile(ctx context.Context, uid uint64) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
+	QueryUsers(ctx context.Context, page int, pageSize int) ([]domain.User, int64, error)
 }
 
 type CachedUserRepository struct {
@@ -120,10 +122,38 @@ func (r *CachedUserRepository) FindByPhone(ctx context.Context, phone string) (d
 	if err != nil {
 		return domain.User{}, err
 	}
-	return domain.User{
-		Id:       u.Id,
-		Email:    u.Email.String,
-		Phone:    u.Phone.String,
-		Password: u.Password,
-	}, nil
+	return r.entityToDomain(u), nil
+}
+
+func (r *CachedUserRepository) QueryUsers(ctx context.Context, page int, pageSize int) ([]domain.User, int64, error) {
+	users, total, err := r.dao.QueryUsers(ctx, page, pageSize)
+	if err != nil {
+		return []domain.User{}, total, err
+	}
+
+	return slice.Map[dao.User, domain.User](users, func(el dao.User, index int) domain.User {
+		return r.entityToDomain(el)
+	}), total, nil
+}
+
+func (r *CachedUserRepository) entityToDomain(u dao.User) domain.User {
+	e := domain.User{
+		Id:         u.Id,
+		Email:      u.Email.String,
+		Phone:      u.Phone.String,
+		Password:   u.Password,
+		CreateTime: time.UnixMilli(u.CreateTime),
+		UpdateTime: time.UnixMilli(u.UpdateTime),
+	}
+
+	e.Profile = &domain.Profile{
+		UserId:       u.Profile.UserId,
+		Nickname:     u.Profile.Nickname,
+		Birthday:     time.UnixMilli(u.Profile.Birthday).Format("2006-01-02"),
+		Introduction: u.Profile.Introduction,
+		CreateTime:   time.UnixMilli(u.Profile.CreateTime),
+		UpdateTime:   time.UnixMilli(u.Profile.UpdateTime),
+	}
+
+	return e
 }

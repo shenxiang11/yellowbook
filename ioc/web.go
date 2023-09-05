@@ -20,7 +20,7 @@ func InitWebServer(userHandler *web.UserHandler) *gin.Engine {
 	}))
 
 	server.Use(
-		middleware.NewLoinMiddlewareBuilder().
+		middleware.NewLoginMiddlewareBuilder().
 			IgnorePaths("/users/signup").
 			IgnorePaths("/users/login").
 			IgnorePaths("/users/login_sms/code/send").
