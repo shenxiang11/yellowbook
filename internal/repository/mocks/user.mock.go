@@ -95,12 +95,13 @@ func (mr *MockUserRepositoryMockRecorder) QueryProfile(ctx, uid interface{}) *go
 }
 
 // QueryUsers mocks base method.
-func (m *MockUserRepository) QueryUsers(ctx context.Context, page, pageSize int) ([]domain.User, error) {
+func (m *MockUserRepository) QueryUsers(ctx context.Context, page, pageSize int) ([]domain.User, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueryUsers", ctx, page, pageSize)
 	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // QueryUsers indicates an expected call of QueryUsers.
