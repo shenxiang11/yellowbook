@@ -3,19 +3,21 @@ package cloopen
 import (
 	"context"
 	"errors"
-	"github.com/cloopen/go-sms-sdk/cloopen"
+	"github.com/shenxiang11/go-sms-sdk/cloopen"
 	"log"
 	"strings"
 	"yellowbook/config"
 	"yellowbook/internal/service/sms"
 )
 
+var ErrSMSSendFailed = errors.New("发送异常")
+
 type Service struct {
 	appId  string
-	client *cloopen.Client
+	client cloopen.IClient
 }
 
-func NewService(client *cloopen.Client) sms.Service {
+func NewService(client cloopen.IClient) sms.Service {
 	return &Service{
 		appId:  config.Conf.Cloopen.AppId,
 		client: client,
@@ -37,7 +39,7 @@ func (s *Service) Send(ctx context.Context, tpl string, args sms.NamedArgSlice, 
 
 	if resp.StatusCode != "000000" {
 		log.Println(resp)
-		return errors.New(resp.StatusMsg)
+		return ErrSMSSendFailed
 	}
 
 	return nil

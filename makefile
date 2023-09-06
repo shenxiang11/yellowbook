@@ -8,3 +8,5 @@ mock:
 
 	@/Users/fs/go/bin/mockgen -source=./internal/service/sms/types.go -package=smsmocks -destination=./internal/service/sms/mocks/types.mock.go
 	@/Users/fs/go/bin/mockgen -source=./internal/service/sms/cloopen/service.go -package=cloopenmocks -destination=./internal/service/sms/cloopen/mocks/service.mock.go
+
+	@/Users/fs/go/bin/mockgen -destination=./internal/service/sms/cloopen/mocks/cloopen.mock.go -package=cloopenmocks github.com/shenxiang11/go-sms-sdk/cloopen IClient,ISMS

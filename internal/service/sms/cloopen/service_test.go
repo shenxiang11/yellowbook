@@ -2,34 +2,76 @@ package cloopen
 
 import (
 	"context"
-	"github.com/cloopen/go-sms-sdk/cloopen"
+	"errors"
+	"github.com/shenxiang11/go-sms-sdk/cloopen"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"testing"
 	"yellowbook/internal/service/sms"
+	cloopenmocks "yellowbook/internal/service/sms/cloopen/mocks"
 )
 
-// 真的会发短信，单元测试时注释掉
-
 func TestCloopen(t *testing.T) {
-	cfg := cloopen.DefaultConfig().
-		WithAPIAccount("8aaf07087fe90a32017ff389d6ac01bb").
-		WithAPIToken("a1c23065a7d847c384d719ad240f6384")
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	client := cloopen.NewJsonClient(cfg)
-
-	s := NewService(client)
-
-	err := s.Send(context.Background(), "1", []sms.NamedArg{
+	testCases := []struct {
+		name    string
+		mock    func(t *testing.T) cloopen.IClient
+		wantErr error
+	}{
 		{
-			Name: "1",
-			Val:  "1234",
+			name: "正常发送",
+			mock: func(t *testing.T) cloopen.IClient {
+				client := cloopenmocks.NewMockIClient(ctrl)
+				s := cloopenmocks.NewMockISMS(ctrl)
+				s.EXPECT().Send(gomock.Any()).Return(&cloopen.SendResponse{
+					StatusCode: "000000",
+					StatusMsg:  "",
+				}, nil)
+				client.EXPECT().SMS().Return(s)
+
+				return client
+			},
+			wantErr: nil,
 		},
 		{
-			Name: "2",
-			Val:  "25444444",
-		},
-	}, "18616154465")
+			name: "发送返回异常",
+			mock: func(t *testing.T) cloopen.IClient {
+				client := cloopenmocks.NewMockIClient(ctrl)
+				s := cloopenmocks.NewMockISMS(ctrl)
+				s.EXPECT().Send(gomock.Any()).Return(nil, errors.New("模拟错误"))
+				client.EXPECT().SMS().Return(s)
 
-	if err != nil {
-		t.Errorf("Error %v", err)
+				return client
+			},
+			wantErr: errors.New("模拟错误"),
+		},
+		{
+			name: "发送 resp code 不符合预期",
+			mock: func(t *testing.T) cloopen.IClient {
+				client := cloopenmocks.NewMockIClient(ctrl)
+				s := cloopenmocks.NewMockISMS(ctrl)
+				s.EXPECT().Send(gomock.Any()).Return(&cloopen.SendResponse{
+					StatusCode: "000001",
+					StatusMsg:  "",
+				}, nil)
+				client.EXPECT().SMS().Return(s)
+
+				return client
+			},
+			wantErr: ErrSMSSendFailed,
+		},
 	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := tc.mock(t)
+			svc := NewService(client)
+			err := svc.Send(context.Background(), "1", []sms.NamedArg{{}}, "110", "120")
+
+			assert.Equal(t, err, tc.wantErr)
+		})
+	}
+
 }
