@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/shenxiang11/zippo/slice"
 	"log"
 	"time"
@@ -13,6 +14,7 @@ import (
 
 var ErrUserDuplicate = dao.ErrUserDuplicate
 var ErrUserNotFound = dao.ErrUserNotFound
+var ErrUserBirthdayFormat = errors.New("输入的生日格式不符合规则")
 
 type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
@@ -24,11 +26,11 @@ type UserRepository interface {
 }
 
 type CachedUserRepository struct {
-	dao   *dao.UserDAO
-	cache *cache.UserCache
+	dao   dao.UserDao
+	cache cache.UserCache
 }
 
-func NewCachedUserRepository(dao *dao.UserDAO, cache *cache.UserCache) UserRepository {
+func NewCachedUserRepository(dao dao.UserDao, cache cache.UserCache) UserRepository {
 	return &CachedUserRepository{
 		dao:   dao,
 		cache: cache,
@@ -66,7 +68,7 @@ func (r *CachedUserRepository) Create(ctx context.Context, u domain.User) error 
 func (r *CachedUserRepository) UpdateProfile(ctx context.Context, u domain.Profile) error {
 	t, err := time.Parse("2006-01-02", u.Birthday)
 	if err != nil {
-		return err
+		return ErrUserBirthdayFormat
 	}
 
 	// 为了一致性，删除对应的缓存
@@ -94,18 +96,7 @@ func (r *CachedUserRepository) QueryProfile(ctx context.Context, uid uint64) (do
 		return domain.User{}, err
 	}
 
-	var user domain.User
-	user.Id = ue.Id
-	user.Email = ue.Email.String
-	user.Phone = ue.Phone.String
-
-	var profile domain.Profile
-	user.Profile = &profile
-
-	user.Profile.UserId = ue.Id
-	user.Profile.Nickname = ue.Profile.Nickname
-	user.Profile.Birthday = time.UnixMilli(ue.Profile.Birthday).Format("2006-01-02")
-	user.Profile.Introduction = ue.Profile.Introduction
+	user := r.entityToDomain(ue)
 
 	go func() {
 		err := r.cache.Set(ctx, user)
@@ -142,17 +133,17 @@ func (r *CachedUserRepository) entityToDomain(u dao.User) domain.User {
 		Email:      u.Email.String,
 		Phone:      u.Phone.String,
 		Password:   u.Password,
-		CreateTime: time.UnixMilli(u.CreateTime),
-		UpdateTime: time.UnixMilli(u.UpdateTime),
+		CreateTime: time.UnixMilli(u.CreateTime).UTC(),
+		UpdateTime: time.UnixMilli(u.UpdateTime).UTC(),
 	}
 
 	e.Profile = &domain.Profile{
 		UserId:       u.Profile.UserId,
 		Nickname:     u.Profile.Nickname,
-		Birthday:     time.UnixMilli(u.Profile.Birthday).Format("2006-01-02"),
+		Birthday:     time.UnixMilli(u.Profile.Birthday).UTC().Format("2006-01-02"),
 		Introduction: u.Profile.Introduction,
-		CreateTime:   time.UnixMilli(u.Profile.CreateTime),
-		UpdateTime:   time.UnixMilli(u.Profile.UpdateTime),
+		CreateTime:   time.UnixMilli(u.Profile.CreateTime).UTC(),
+		UpdateTime:   time.UnixMilli(u.Profile.UpdateTime).UTC(),
 	}
 
 	return e

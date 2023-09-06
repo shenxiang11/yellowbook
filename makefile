@@ -12,4 +12,7 @@ mock:
 	@/Users/fs/go/bin/mockgen -destination=./internal/service/sms/cloopen/mocks/cloopen.mock.go -package=cloopenmocks github.com/shenxiang11/go-sms-sdk/cloopen IClient,ISMS
 	@/Users/fs/go/bin/mockgen -destination=./testing/redismocks/redis.mock.go -package=redismocks github.com/redis/go-redis/v9 Cmdable
 
-	@/Users/fs/go/bin/mockgen -source=./internal/repository/cache/interface.go -destination=./internal/repository/cache/mocks/interface.mock.go -package=codecachemocks
+	@/Users/fs/go/bin/mockgen -source=./internal/repository/cache/interface.go -destination=./internal/repository/cache/mocks/interface.mock.go -package=cachemocks
+
+	@/Users/fs/go/bin/mockgen -source=./internal/repository/dao/user.go -destination=./internal/repository/dao/mocks/user.mock.go -package=daomocks
+	@/Users/fs/go/bin/mockgen -source=./internal/repository/cache/user.go -destination=./internal/repository/cache/mocks/user.mock.go -package=cachemocks

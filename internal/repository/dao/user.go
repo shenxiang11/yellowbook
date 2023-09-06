@@ -13,22 +13,31 @@ import (
 var ErrUserDuplicate = errors.New("用户冲突")
 var ErrUserNotFound = gorm.ErrRecordNotFound
 
-type UserDAO struct {
+type UserDao interface {
+	FindByEmail(ctx context.Context, email string) (User, error)
+	Insert(ctx context.Context, u User) error
+	UpdateProfile(ctx context.Context, p UserProfile) error
+	FindProfileByUserId(ctx context.Context, userId uint64) (User, error)
+	FindByPhone(ctx context.Context, phone string) (User, error)
+	QueryUsers(ctx context.Context, page int, pageSize int) ([]User, int64, error)
+}
+
+type GormUserDAO struct {
 	db *gorm.DB
 }
 
-func NewUserDAO(db *gorm.DB) *UserDAO {
-	return &UserDAO{db: db}
+func NewUserDAO(db *gorm.DB) *GormUserDAO {
+	return &GormUserDAO{db: db}
 }
 
-func (dao *UserDAO) FindByEmail(ctx context.Context, email string) (User, error) {
+func (dao *GormUserDAO) FindByEmail(ctx context.Context, email string) (User, error) {
 	var u User
 	err := dao.db.WithContext(ctx).Where("email = ?", email).First(&u).Error
 
 	return u, err
 }
 
-func (dao *UserDAO) Insert(ctx context.Context, u User) error {
+func (dao *GormUserDAO) Insert(ctx context.Context, u User) error {
 	now := time.Now().UnixMilli()
 	u.CreateTime = now
 	u.UpdateTime = now
@@ -46,7 +55,7 @@ func (dao *UserDAO) Insert(ctx context.Context, u User) error {
 	return err
 }
 
-func (dao *UserDAO) UpdateProfile(ctx context.Context, p UserProfile) error {
+func (dao *GormUserDAO) UpdateProfile(ctx context.Context, p UserProfile) error {
 	var profile UserProfile
 	err := dao.db.WithContext(ctx).FirstOrCreate(&profile, UserProfile{UserId: p.UserId}).Error
 
@@ -65,7 +74,7 @@ func (dao *UserDAO) UpdateProfile(ctx context.Context, p UserProfile) error {
 	return err
 }
 
-func (dao *UserDAO) FindProfileByUserId(ctx context.Context, userId uint64) (User, error) {
+func (dao *GormUserDAO) FindProfileByUserId(ctx context.Context, userId uint64) (User, error) {
 	var user User
 	err := dao.db.WithContext(ctx).Model(&User{}).Preload("Profile").Where("id = ?", userId).First(&user).Error
 
@@ -76,7 +85,7 @@ func (dao *UserDAO) FindProfileByUserId(ctx context.Context, userId uint64) (Use
 	return user, nil
 }
 
-func (dao *UserDAO) FindByPhone(ctx context.Context, phone string) (User, error) {
+func (dao *GormUserDAO) FindByPhone(ctx context.Context, phone string) (User, error) {
 	var user User
 	err := dao.db.WithContext(ctx).Model(&User{}).Where("phone = ?", phone).First(&user).Error
 
@@ -87,7 +96,7 @@ func (dao *UserDAO) FindByPhone(ctx context.Context, phone string) (User, error)
 	return user, nil
 }
 
-func (dao *UserDAO) QueryUsers(ctx context.Context, page int, pageSize int) ([]User, int64, error) {
+func (dao *GormUserDAO) QueryUsers(ctx context.Context, page int, pageSize int) ([]User, int64, error) {
 	var users []User
 
 	var total int64
