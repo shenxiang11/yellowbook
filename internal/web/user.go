@@ -5,7 +5,7 @@ import (
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	webproto "github.com/shenxiang11/yellowbook-proto/web"
+	"github.com/shenxiang11/yellowbook-proto/proto"
 	"net/http"
 	"strconv"
 	"time"
@@ -57,7 +57,7 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 }
 
 func (u *UserHandler) SignUp(ctx *gin.Context) {
-	var req webproto.SignUpRequest
+	var req proto.SignUpRequest
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
@@ -117,7 +117,7 @@ type UserClaims struct {
 }
 
 func (u *UserHandler) Login(ctx *gin.Context) {
-	var req webproto.LoginRequest
+	var req proto.LoginRequest
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
@@ -156,7 +156,7 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 }
 
 func (u *UserHandler) Edit(ctx *gin.Context) {
-	var req webproto.EditRequest
+	var req proto.EditRequest
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
@@ -224,7 +224,7 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 		return
 	}
 
-	res := &webproto.ProfileResponse{
+	res := &proto.ProfileResponse{
 		UserId: user.Id,
 		Email:  user.Email,
 		Phone:  user.Phone,
@@ -241,7 +241,7 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 }
 
 func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
-	var req webproto.SendLoginSMSCodeRequest
+	var req proto.SendLoginSMSCodeRequest
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
@@ -279,7 +279,7 @@ func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
 }
 
 func (u *UserHandler) LoginSMS(ctx *gin.Context) {
-	var req webproto.LoginSMSRequest
+	var req proto.LoginSMSRequest
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,

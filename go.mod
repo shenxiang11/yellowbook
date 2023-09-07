@@ -14,7 +14,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/redis/go-redis/v9 v9.1.0
 	github.com/shenxiang11/go-sms-sdk v0.0.0-20230905113007-85108c620017
-	github.com/shenxiang11/yellowbook-proto v0.0.0-20230907081858-a25a62dbfb1c
+	github.com/shenxiang11/yellowbook-proto v0.0.0-20230907090431-cc769b6a2d3c
 	github.com/shenxiang11/zippo v0.0.0-20230904102615-492a502750e4
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/swag v1.16.2
@@ -26,8 +26,6 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.2.0 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/bytedance/sonic v1.10.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
@@ -67,6 +65,5 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

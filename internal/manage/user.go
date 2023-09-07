@@ -2,9 +2,10 @@ package manage
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/shenxiang11/yellowbook-proto/proto"
 	"github.com/shenxiang11/zippo/slice"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"net/http"
-	"time"
 	"yellowbook/internal/domain"
 	"yellowbook/internal/service"
 )
@@ -29,20 +30,9 @@ func (u *UserHandler) GetList(ctx *gin.Context) {
 		PageSize int `form:"page_size"`
 	}
 
-	type RespItem struct {
-		Id           uint64    `json:"id,omitempty"`
-		Email        string    `json:"email,omitempty"`
-		Phone        string    `json:"phone,omitempty"`
-		Nickname     string    `json:"nickname,omitempty"`
-		Birthday     string    `json:"birthday,omitempty"`
-		Introduction string    `json:"introduction,omitempty"`
-		CreateTime   time.Time `json:"create_time,omitempty"`
-		UpdateTime   time.Time `json:"update_time,omitempty"`
-	}
-
 	var req FilterReq
 	if err := ctx.Bind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "输入错误",
 		})
@@ -51,23 +41,23 @@ func (u *UserHandler) GetList(ctx *gin.Context) {
 
 	users, total, err := u.svc.QueryUsers(ctx, req.Page, req.PageSize)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 500,
 			Msg:  "系统错误",
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, Result[any]{
+	ctx.JSON(http.StatusOK, Result{
 		Data: gin.H{
 			"total": total,
-			"list": slice.Map[domain.User, RespItem](users, func(el domain.User, index int) RespItem {
-				item := RespItem{
+			"list": slice.Map[domain.User, *proto.User](users, func(el domain.User, index int) *proto.User {
+				item := &proto.User{
 					Id:         el.Id,
 					Email:      el.Email,
 					Phone:      el.Phone,
-					CreateTime: el.CreateTime,
-					UpdateTime: el.UpdateTime,
+					CreateTime: timestamppb.New(el.CreateTime),
+					UpdateTime: timestamppb.New(el.UpdateTime),
 				}
 				if el.Profile != nil {
 					item.Nickname = el.Profile.Nickname
@@ -75,9 +65,9 @@ func (u *UserHandler) GetList(ctx *gin.Context) {
 					item.Introduction = el.Profile.Introduction
 
 					if el.UpdateTime.Compare(el.Profile.UpdateTime) == 1 {
-						item.UpdateTime = el.UpdateTime
+						item.UpdateTime = timestamppb.New(el.UpdateTime)
 					} else {
-						item.UpdateTime = el.Profile.UpdateTime
+						item.UpdateTime = timestamppb.New(el.Profile.UpdateTime)
 					}
 				}
 
