@@ -1,0 +1,3 @@
+[submodule "yellowbook-proto"]
+	path = yellowbook-proto
+	url = git@github.com:shenxiang11/yellowbook-proto.git
