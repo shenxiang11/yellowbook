@@ -211,7 +211,7 @@ func TestCachedUserRepository_QueryProfile(t *testing.T) {
 						String: "123@qq.com",
 						Valid:  true,
 					},
-					Profile: dao.UserProfile{
+					Profile: &dao.UserProfile{
 						UserId:     1,
 						Birthday:   86400000,
 						CreateTime: now.UnixMilli(),
@@ -293,7 +293,7 @@ func TestCachedUserRepository_QueryProfile(t *testing.T) {
 						String: "123@qq.com",
 						Valid:  true,
 					},
-					Profile: dao.UserProfile{
+					Profile: &dao.UserProfile{
 						UserId:     1,
 						Birthday:   86400000,
 						CreateTime: now.UnixMilli(),
@@ -369,7 +369,7 @@ func TestCachedUserRepository_FindByPhone(t *testing.T) {
 					},
 					CreateTime: now.UnixMilli(),
 					UpdateTime: now.UnixMilli(),
-					Profile: dao.UserProfile{
+					Profile: &dao.UserProfile{
 						Birthday:   86400000,
 						CreateTime: now.UnixMilli(),
 						UpdateTime: now.UnixMilli(),
@@ -448,7 +448,7 @@ func TestCachedUserRepository_QueryUsers(t *testing.T) {
 						},
 						CreateTime: now.UnixMilli(),
 						UpdateTime: now.UnixMilli(),
-						Profile: dao.UserProfile{
+						Profile: &dao.UserProfile{
 							Birthday:   86400000,
 							CreateTime: now.UnixMilli(),
 							UpdateTime: now.UnixMilli(),

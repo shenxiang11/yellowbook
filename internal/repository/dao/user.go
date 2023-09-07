@@ -118,7 +118,7 @@ type User struct {
 	Password   string
 	CreateTime int64
 	UpdateTime int64
-	Profile    UserProfile
+	Profile    *UserProfile
 }
 
 type UserProfile struct {

@@ -137,13 +137,15 @@ func (r *CachedUserRepository) entityToDomain(u dao.User) domain.User {
 		UpdateTime: time.UnixMilli(u.UpdateTime).UTC(),
 	}
 
-	e.Profile = &domain.Profile{
-		UserId:       u.Profile.UserId,
-		Nickname:     u.Profile.Nickname,
-		Birthday:     time.UnixMilli(u.Profile.Birthday).UTC().Format("2006-01-02"),
-		Introduction: u.Profile.Introduction,
-		CreateTime:   time.UnixMilli(u.Profile.CreateTime).UTC(),
-		UpdateTime:   time.UnixMilli(u.Profile.UpdateTime).UTC(),
+	if u.Profile != nil {
+		e.Profile = &domain.Profile{
+			UserId:       u.Profile.UserId,
+			Nickname:     u.Profile.Nickname,
+			Birthday:     time.UnixMilli(u.Profile.Birthday).UTC().Format("2006-01-02"),
+			Introduction: u.Profile.Introduction,
+			CreateTime:   time.UnixMilli(u.Profile.CreateTime).UTC(),
+			UpdateTime:   time.UnixMilli(u.Profile.UpdateTime).UTC(),
+		}
 	}
 
 	return e

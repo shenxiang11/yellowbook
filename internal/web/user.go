@@ -239,15 +239,19 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 		return
 	}
 
+	res := Res{
+		UserId: user.Id,
+		Email:  user.Email,
+		Phone:  user.Phone,
+	}
+	if user.Profile != nil {
+		res.Nickname = user.Profile.Nickname
+		res.Birthday = user.Profile.Birthday
+		res.Introduction = user.Profile.Introduction
+	}
+
 	ctx.JSON(http.StatusOK, Result[Res]{
-		Data: Res{
-			UserId:       user.Id,
-			Email:        user.Email,
-			Phone:        user.Phone,
-			Nickname:     user.Profile.Nickname,
-			Birthday:     user.Profile.Birthday,
-			Introduction: user.Profile.Introduction,
-		},
+		Data: res,
 	})
 }
 

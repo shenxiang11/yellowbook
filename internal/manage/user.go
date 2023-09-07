@@ -63,19 +63,22 @@ func (u *UserHandler) GetList(ctx *gin.Context) {
 			"total": total,
 			"list": slice.Map[domain.User, RespItem](users, func(el domain.User, index int) RespItem {
 				item := RespItem{
-					Id:           el.Id,
-					Email:        el.Email,
-					Phone:        el.Phone,
-					Nickname:     el.Password,
-					Birthday:     el.Profile.Birthday,
-					Introduction: el.Profile.Introduction,
-					CreateTime:   el.CreateTime,
+					Id:         el.Id,
+					Email:      el.Email,
+					Phone:      el.Phone,
+					CreateTime: el.CreateTime,
+					UpdateTime: el.UpdateTime,
 				}
+				if el.Profile != nil {
+					item.Nickname = el.Profile.Nickname
+					item.Birthday = el.Profile.Birthday
+					item.Introduction = el.Profile.Introduction
 
-				if el.UpdateTime.Compare(el.Profile.UpdateTime) == 1 {
-					item.UpdateTime = el.UpdateTime
-				} else {
-					item.UpdateTime = el.Profile.UpdateTime
+					if el.UpdateTime.Compare(el.Profile.UpdateTime) == 1 {
+						item.UpdateTime = el.UpdateTime
+					} else {
+						item.UpdateTime = el.Profile.UpdateTime
+					}
 				}
 
 				return item

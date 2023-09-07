@@ -11,7 +11,7 @@ func InitManageServer(userHandler *manage.UserHandler) *gin.Engine {
 	server := gin.Default()
 
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:9090"},
+		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowHeaders:     []string{},
 		AllowCredentials: true,
 		ExposeHeaders:    []string{"X-Jwt-Token"},
