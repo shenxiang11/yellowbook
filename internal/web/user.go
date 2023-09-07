@@ -5,6 +5,7 @@ import (
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	webproto "github.com/shenxiang11/yellowbook-proto/web"
 	"net/http"
 	"strconv"
 	"time"
@@ -56,14 +57,9 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 }
 
 func (u *UserHandler) SignUp(ctx *gin.Context) {
-	type SignUpReq struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	var req SignUpReq
+	var req webproto.SignUpRequest
 	if err := ctx.Bind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "输入错误",
 		})
@@ -74,7 +70,7 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 	// 作者说不设置超时，不会有超时错误，所以目前可以忽略错误
 	ok, _ := u.emailExp.MatchString(req.Email)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "邮箱格式不正确",
 		})
@@ -83,7 +79,7 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 
 	ok, _ = u.passwordExp.MatchString(req.Password)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "密码必须大于8位，包含数字、特殊字符",
 		})
@@ -95,21 +91,21 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 		Password: req.Password,
 	})
 	if errors.Is(err, service.ErrUserDuplicate) {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "邮箱冲突",
 		})
 		return
 	}
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "系统错误",
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, Result[any]{
+	ctx.JSON(http.StatusOK, Result{
 		Msg: "注册成功",
 	})
 }
@@ -121,14 +117,9 @@ type UserClaims struct {
 }
 
 func (u *UserHandler) Login(ctx *gin.Context) {
-	type LoginReq struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	var req LoginReq
+	var req webproto.LoginRequest
 	if err := ctx.Bind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "输入错误",
 		})
@@ -137,14 +128,14 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 
 	user, err := u.svc.Login(ctx, req.Email, req.Password)
 	if errors.Is(err, service.ErrInvalidUserOrPassword) {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "用户名或密码不正确",
 		})
 		return
 	}
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "系统错误",
 		})
@@ -152,28 +143,22 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 	}
 
 	if err = u.setJWTToken(ctx, user); err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "系统错误",
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, Result[any]{
+	ctx.JSON(http.StatusOK, Result{
 		Msg: "登录成功",
 	})
 }
 
 func (u *UserHandler) Edit(ctx *gin.Context) {
-	type EditReq struct {
-		Nickname     string
-		Birthday     string
-		Introduction string
-	}
-
-	var req EditReq
+	var req webproto.EditRequest
 	if err := ctx.Bind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "输入错误",
 		})
@@ -182,7 +167,7 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 
 	nicknameCount := utf8.RuneCountInString(req.Nickname)
 	if nicknameCount < 2 || nicknameCount > 24 {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "昵称请请设置 2-24 个字符",
 		})
@@ -190,7 +175,7 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 	}
 
 	if utf8.RuneCountInString(req.Introduction) > 100 {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "简介不能多余 100 个字符数",
 		})
@@ -206,14 +191,14 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 		Introduction: req.Introduction,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "更新失败",
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, Result[any]{
+	ctx.JSON(http.StatusOK, Result{
 		Msg: "更新成功",
 	})
 }
@@ -232,14 +217,14 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 
 	user, err := u.svc.QueryProfile(ctx, userId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "获取失败",
 		})
 		return
 	}
 
-	res := Res{
+	res := &webproto.ProfileResponse{
 		UserId: user.Id,
 		Email:  user.Email,
 		Phone:  user.Phone,
@@ -250,18 +235,15 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 		res.Introduction = user.Profile.Introduction
 	}
 
-	ctx.JSON(http.StatusOK, Result[Res]{
+	ctx.JSON(http.StatusOK, Result{
 		Data: res,
 	})
 }
 
 func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
-	type Req struct {
-		Phone string `json:"phone"`
-	}
-	var req Req
+	var req webproto.SendLoginSMSCodeRequest
 	if err := ctx.Bind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "输入错误",
 		})
@@ -270,7 +252,7 @@ func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
 
 	ok, _ := u.phoneExp.MatchString(req.Phone)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "手机格式不正确",
 		})
@@ -280,16 +262,16 @@ func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
 	err := u.codeSvs.Send(ctx, biz, req.Phone)
 	switch {
 	case err == nil:
-		ctx.JSON(http.StatusOK, Result[any]{
+		ctx.JSON(http.StatusOK, Result{
 			Msg: "发送成功",
 		})
 	case errors.Is(err, service.ErrCodeSendTooMany):
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "发送太频繁，请稍后再试",
 		})
 	default:
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "系统错误",
 		})
@@ -297,13 +279,9 @@ func (u *UserHandler) SendLoginSMSCode(ctx *gin.Context) {
 }
 
 func (u *UserHandler) LoginSMS(ctx *gin.Context) {
-	type Req struct {
-		Phone string `json:"phone"`
-		Code  string `json:"code"`
-	}
-	var req Req
+	var req webproto.LoginSMSRequest
 	if err := ctx.Bind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "输入错误",
 		})
@@ -312,7 +290,7 @@ func (u *UserHandler) LoginSMS(ctx *gin.Context) {
 
 	ok, _ := u.phoneExp.MatchString(req.Phone)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "手机格式不正确",
 		})
@@ -321,13 +299,13 @@ func (u *UserHandler) LoginSMS(ctx *gin.Context) {
 
 	err := u.codeSvs.Verify(ctx, biz, req.Phone, req.Code)
 	if errors.Is(err, service.ErrCodeVerifyFailed) {
-		ctx.JSON(http.StatusBadRequest, Result[any]{
+		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
 			Msg:  "验证码错误",
 		})
 		return
 	} else if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "系统错误",
 		})
@@ -336,7 +314,7 @@ func (u *UserHandler) LoginSMS(ctx *gin.Context) {
 
 	user, err := u.svc.FindOrCreate(ctx, req.Phone)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "系统错误",
 		})
@@ -344,14 +322,14 @@ func (u *UserHandler) LoginSMS(ctx *gin.Context) {
 	}
 
 	if err = u.setJWTToken(ctx, user); err != nil {
-		ctx.JSON(http.StatusInternalServerError, Result[any]{
+		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 5,
 			Msg:  "系统错误",
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, Result[any]{
+	ctx.JSON(http.StatusOK, Result{
 		Msg: "验证成功",
 	})
 }
