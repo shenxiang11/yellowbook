@@ -14,7 +14,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/redis/go-redis/v9 v9.1.0
 	github.com/shenxiang11/go-sms-sdk v0.0.0-20230905113007-85108c620017
-	github.com/shenxiang11/yellowbook-proto v0.0.0-20230907090431-cc769b6a2d3c
+	github.com/shenxiang11/yellowbook-proto v0.0.0-20230908060902-08fb61806a47
 	github.com/shenxiang11/zippo v0.0.0-20230904102615-492a502750e4
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/swag v1.16.2

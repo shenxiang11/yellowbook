@@ -5,13 +5,15 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/go-sql-driver/mysql"
+	"github.com/shenxiang11/yellowbook-proto/proto"
+	"github.com/shenxiang11/zippo/slice"
 	"gorm.io/gorm"
 	"time"
-	"yellowbook/internal/pkg/paginate"
 )
 
 var ErrUserDuplicate = errors.New("用户冲突")
 var ErrUserNotFound = gorm.ErrRecordNotFound
+var ErrMissingFilter = errors.New("缺少查询条件")
 
 type UserDao interface {
 	FindByEmail(ctx context.Context, email string) (User, error)
@@ -19,7 +21,7 @@ type UserDao interface {
 	UpdateProfile(ctx context.Context, p UserProfile) error
 	FindProfileByUserId(ctx context.Context, userId uint64) (User, error)
 	FindByPhone(ctx context.Context, phone string) (User, error)
-	QueryUsers(ctx context.Context, page int, pageSize int) ([]User, int64, error)
+	QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]User, int64, error)
 }
 
 type GormUserDAO struct {
@@ -96,19 +98,47 @@ func (dao *GormUserDAO) FindByPhone(ctx context.Context, phone string) (User, er
 	return user, nil
 }
 
-func (dao *GormUserDAO) QueryUsers(ctx context.Context, page int, pageSize int) ([]User, int64, error) {
+func (dao *GormUserDAO) QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]User, int64, error) {
+	if filter == nil {
+		return nil, 0, ErrMissingFilter
+	}
+
 	var users []User
 
-	var total int64
-	dao.db.WithContext(ctx).Model(&User{}).Count(&total)
+	query := dao.db.Debug().WithContext(ctx).Model(&User{})
 
-	err := dao.db.WithContext(ctx).Scopes(paginate.Paginate(page, pageSize)).Preload("Profile").Find(&users).Error
+	if filter.Id != 0 {
+		query = query.Where("Id = ?", filter.Id)
+	}
+	if filter.Phone != "" {
+		query = query.Where("phone LIKE ?", "%"+filter.Phone+"%")
+	}
+	if filter.Email != "" {
+		query = query.Where("email LIKE ?", "%"+filter.Email+"%")
+	}
+
+	err := query.Preload("Profile").Find(&users).Error
 
 	if err != nil {
 		return []User{}, 0, err
 	}
 
-	return users, total, nil
+	users = slice.Filter[User](users, func(el User, idx int) bool {
+		k := true
+		if filter.Birthday != 0 && el.Profile != nil {
+			userLocation, _ := time.LoadLocation("Asia/Shanghai")
+			_, offset := time.UnixMilli(filter.Birthday).In(userLocation).Zone()
+			k = (filter.Birthday + int64(offset*1000)) == el.Profile.Birthday
+		} else if filter.Birthday != 0 && el.Profile == nil {
+			k = false
+		}
+
+		return k
+	})
+
+	offset := (filter.Page - 1) * filter.PageSize
+	end := min(offset+filter.PageSize, int32(len(users)))
+	return users[offset:end], int64(len(users)), nil
 }
 
 type User struct {

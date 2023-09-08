@@ -1,10 +1,10 @@
 package manage
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shenxiang11/yellowbook-proto/proto"
 	"github.com/shenxiang11/zippo/slice"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"net/http"
 	"yellowbook/internal/domain"
 	"yellowbook/internal/service"
@@ -21,16 +21,13 @@ func NewUserHandler(svc service.IUserService) *UserHandler {
 }
 
 func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
-	ug.GET("/list", u.GetList)
+	ug.POST("/list", u.GetList)
 }
 
 func (u *UserHandler) GetList(ctx *gin.Context) {
-	type FilterReq struct {
-		Page     int `form:"page"`
-		PageSize int `form:"page_size"`
-	}
+	fmt.Println(ctx.Request.Header.Get("Yellow-Book-Timezone"))
 
-	var req FilterReq
+	var req proto.GetUserListRequest
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, Result{
 			Code: 4,
@@ -39,7 +36,7 @@ func (u *UserHandler) GetList(ctx *gin.Context) {
 		return
 	}
 
-	users, total, err := u.svc.QueryUsers(ctx, req.Page, req.PageSize)
+	users, total, err := u.svc.QueryUsers(ctx, &req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, Result{
 			Code: 500,
@@ -56,18 +53,16 @@ func (u *UserHandler) GetList(ctx *gin.Context) {
 					Id:         el.Id,
 					Email:      el.Email,
 					Phone:      el.Phone,
-					CreateTime: timestamppb.New(el.CreateTime),
-					UpdateTime: timestamppb.New(el.UpdateTime),
+					CreateTime: el.CreateTime.UTC().Format("2006-01-02 03:04:05"),
+					UpdateTime: el.UpdateTime.UTC().Format("2006-01-02 03:04:05"),
 				}
 				if el.Profile != nil {
 					item.Nickname = el.Profile.Nickname
 					item.Birthday = el.Profile.Birthday
 					item.Introduction = el.Profile.Introduction
 
-					if el.UpdateTime.Compare(el.Profile.UpdateTime) == 1 {
-						item.UpdateTime = timestamppb.New(el.UpdateTime)
-					} else {
-						item.UpdateTime = timestamppb.New(el.Profile.UpdateTime)
+					if el.UpdateTime.Compare(el.Profile.UpdateTime) == -1 {
+						item.UpdateTime = el.Profile.UpdateTime.UTC().Format("2006-01-02 03:04:05")
 					}
 				}
 

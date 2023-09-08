@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/shenxiang11/yellowbook-proto/proto"
 	"golang.org/x/crypto/bcrypt"
 	"yellowbook/internal/domain"
 	"yellowbook/internal/repository"
@@ -22,7 +23,7 @@ type IUserService interface {
 	FindOrCreate(ctx context.Context, phone string) (domain.User, error)
 	CompareHashAndPassword(ctx context.Context, hashedPassword []byte, password []byte) error
 	GenerateFromPassword(ctx context.Context, password []byte) ([]byte, error)
-	QueryUsers(ctx context.Context, page int, pageSize int) ([]domain.User, int64, error)
+	QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error)
 }
 
 type UserService struct {
@@ -109,6 +110,6 @@ func (svc *UserService) GenerateFromPassword(ctx context.Context, password []byt
 	return svc.generateFromPassword(password, bcrypt.DefaultCost)
 }
 
-func (svc *UserService) QueryUsers(ctx context.Context, page int, pageSize int) ([]domain.User, int64, error) {
-	return svc.repo.QueryUsers(ctx, page, pageSize)
+func (svc *UserService) QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error) {
+	return svc.repo.QueryUsers(ctx, filter)
 }

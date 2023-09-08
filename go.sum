@@ -143,10 +143,8 @@ github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUA
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
 github.com/shenxiang11/go-sms-sdk v0.0.0-20230905113007-85108c620017 h1:arhP0gK1W/Qa1H9a9Vkz+T3VtDUIGUp1QIo0T5pSvYU=
 github.com/shenxiang11/go-sms-sdk v0.0.0-20230905113007-85108c620017/go.mod h1:DgBgFies1FTGR+xqz+Pgnwnp7ZA5FuBKmDDlNZLFjsM=
-github.com/shenxiang11/yellowbook-proto v0.0.0-20230907085348-57530befc8d1 h1:DyWiLd+VD0in1aTNH+qyyJ5Du7jyBgWbGQeRhlccu2M=
-github.com/shenxiang11/yellowbook-proto v0.0.0-20230907085348-57530befc8d1/go.mod h1:tG6gHijQaE87YKKlqqdjTQZY+kRj3XZVBU10eFVSkCw=
-github.com/shenxiang11/yellowbook-proto v0.0.0-20230907090431-cc769b6a2d3c h1:yLqkU0Jb8YFGrtsutq40OM1VfGjEIzosYo3w2YFZuHg=
-github.com/shenxiang11/yellowbook-proto v0.0.0-20230907090431-cc769b6a2d3c/go.mod h1:tG6gHijQaE87YKKlqqdjTQZY+kRj3XZVBU10eFVSkCw=
+github.com/shenxiang11/yellowbook-proto v0.0.0-20230908060902-08fb61806a47 h1:hGfNjKEUU0IjCLo6/9H6mO1susRhM8UQDCjPcTtNsSk=
+github.com/shenxiang11/yellowbook-proto v0.0.0-20230908060902-08fb61806a47/go.mod h1:tG6gHijQaE87YKKlqqdjTQZY+kRj3XZVBU10eFVSkCw=
 github.com/shenxiang11/zippo v0.0.0-20230904102615-492a502750e4 h1:VnztQjb+rPrgGJrLzxN4kvr1WfgF5ps96ByLGuWNhpo=
 github.com/shenxiang11/zippo v0.0.0-20230904102615-492a502750e4/go.mod h1:ItYjUqSoawzz7Kf34SDfIqEr9nbeBjkOeKNIsYQqbzg=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/shenxiang11/yellowbook-proto/proto"
 	"github.com/shenxiang11/zippo/slice"
 	"log"
 	"time"
@@ -22,7 +23,7 @@ type UserRepository interface {
 	UpdateProfile(ctx context.Context, u domain.Profile) error
 	QueryProfile(ctx context.Context, uid uint64) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
-	QueryUsers(ctx context.Context, page int, pageSize int) ([]domain.User, int64, error)
+	QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error)
 }
 
 type CachedUserRepository struct {
@@ -116,8 +117,8 @@ func (r *CachedUserRepository) FindByPhone(ctx context.Context, phone string) (d
 	return r.entityToDomain(u), nil
 }
 
-func (r *CachedUserRepository) QueryUsers(ctx context.Context, page int, pageSize int) ([]domain.User, int64, error) {
-	users, total, err := r.dao.QueryUsers(ctx, page, pageSize)
+func (r *CachedUserRepository) QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error) {
+	users, total, err := r.dao.QueryUsers(ctx, filter)
 	if err != nil {
 		return []domain.User{}, total, err
 	}
