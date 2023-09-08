@@ -126,9 +126,7 @@ func (dao *GormUserDAO) QueryUsers(ctx context.Context, filter *proto.GetUserLis
 	users = slice.Filter[User](users, func(el User, idx int) bool {
 		k := true
 		if filter.Birthday != 0 && el.Profile != nil {
-			userLocation, _ := time.LoadLocation("Asia/Shanghai")
-			_, offset := time.UnixMilli(filter.Birthday).In(userLocation).Zone()
-			k = (filter.Birthday + int64(offset*1000)) == el.Profile.Birthday
+			k = filter.Birthday == el.Profile.Birthday
 		} else if filter.Birthday != 0 && el.Profile == nil {
 			k = false
 		}
