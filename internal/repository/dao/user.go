@@ -6,9 +6,9 @@ import (
 	"errors"
 	"github.com/go-sql-driver/mysql"
 	"github.com/shenxiang11/yellowbook-proto/proto"
-	"github.com/shenxiang11/zippo/slice"
 	"gorm.io/gorm"
 	"time"
+	"yellowbook/internal/pkg/paginate"
 )
 
 var ErrUserDuplicate = errors.New("用户冲突")
@@ -105,10 +105,12 @@ func (dao *GormUserDAO) QueryUsers(ctx context.Context, filter *proto.GetUserLis
 
 	var users []User
 
-	query := dao.db.Debug().WithContext(ctx).Model(&User{})
+	query := dao.db.Scopes(paginate.Paginate(int(filter.Page), int(filter.PageSize))).WithContext(ctx).
+		Select("users.*, Profile.*, CASE WHEN Profile.update_time IS NOT NULL AND users.update_time <= Profile.update_time THEN Profile.update_time ELSE users.update_time END AS MaxUpdateTime").
+		Joins("Profile").Model(&User{})
 
 	if filter.Id != 0 {
-		query = query.Where("Id = ?", filter.Id)
+		query = query.Where("id = ?", filter.Id)
 	}
 	if filter.Phone != "" {
 		query = query.Where("phone LIKE ?", "%"+filter.Phone+"%")
@@ -116,37 +118,37 @@ func (dao *GormUserDAO) QueryUsers(ctx context.Context, filter *proto.GetUserLis
 	if filter.Email != "" {
 		query = query.Where("email LIKE ?", "%"+filter.Email+"%")
 	}
+	if filter.Nickname != "" {
+		query = query.Where("Profile.nickname like ?", "%"+filter.Nickname+"%")
+	}
+	if filter.Introduction != "" {
+		query = query.Where("Profile.introduction like ?", "%"+filter.Introduction+"%")
+	}
+	if filter.CreateTimeStart != 0 && filter.CreateTimeEnd != 0 {
+		query.Where("users.create_time >= ? and users.create_time < ?", filter.CreateTimeStart, filter.CreateTimeEnd)
+	}
+	if filter.UpdateTimeStart != 0 && filter.UpdateTimeEnd != 0 {
+		query.Having("MaxUpdateTime > ? and MaxUpdateTime < ?", filter.UpdateTimeStart, filter.UpdateTimeEnd)
+	}
 
-	err := query.Preload("Profile").Find(&users).Error
+	err := query.Find(&users).Error
 
 	if err != nil {
 		return []User{}, 0, err
 	}
 
-	users = slice.Filter[User](users, func(el User, idx int) bool {
-		k := true
-		if filter.Birthday != 0 && el.Profile != nil {
-			k = filter.Birthday == el.Profile.Birthday
-		} else if filter.Birthday != 0 && el.Profile == nil {
-			k = false
-		}
-
-		return k
-	})
-
-	offset := (filter.Page - 1) * filter.PageSize
-	end := min(offset+filter.PageSize, int32(len(users)))
-	return users[offset:end], int64(len(users)), nil
+	return users, int64(len(users)), nil
 }
 
 type User struct {
-	Id         uint64         `gorm:"primaryKey,autoIncrement"`
-	Email      sql.NullString `gorm:"unique"`
-	Phone      sql.NullString `gorm:"unique"`
-	Password   string
-	CreateTime int64
-	UpdateTime int64
-	Profile    *UserProfile
+	Id            uint64         `gorm:"primaryKey,autoIncrement"`
+	Email         sql.NullString `gorm:"unique"`
+	Phone         sql.NullString `gorm:"unique"`
+	Password      string
+	CreateTime    int64
+	UpdateTime    int64
+	Profile       *UserProfile
+	MaxUpdateTime int64 // User 和 UserProfile update time 的较大值
 }
 
 type UserProfile struct {
