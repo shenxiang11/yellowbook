@@ -1,13 +1,17 @@
 package web
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/shenxiang11/yellowbook-proto/proto"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 	"yellowbook/internal/domain"
@@ -54,6 +58,87 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 	ug.POST("/edit", u.Edit)
 	ug.POST("/login_sms/code/send", u.SendLoginSMSCode)
 	ug.POST("/login_sms", u.LoginSMS)
+	ug.GET("/github/oauth", u.Oauth)
+	ug.GET("/github/authorize", u.Authorize)
+}
+
+func (u *UserHandler) Oauth(ctx *gin.Context) {
+	endpoint := "https://github.com/login/oauth/authorize"
+	params := url.Values{
+		"client_id":    {"c54992dff1a03482b7de"},
+		"redirect_uri": {"http://127.0.0.1:8080/users/github/authorize"},
+		"scope":        {"users"},
+	}
+
+	ctx.Redirect(http.StatusFound, endpoint+"?"+params.Encode())
+	// 授权后拿到：https://www.yellowbook.com/github/oauth2/?code=d30f6e808f949ece06a2
+}
+
+func (u *UserHandler) Authorize(ctx *gin.Context) {
+	code := ctx.Query("code")
+
+	target := "https://github.com/login/oauth/access_token"
+	params := url.Values{
+		"client_id":     {"c54992dff1a03482b7de"},
+		"client_secret": {"ed7ed47fe0e64b7226eb36c6b9966897fd630412"},
+		"code":          {code},
+	}
+
+	req, err := http.NewRequest(http.MethodPost, target, strings.NewReader(params.Encode()))
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var tokenResponse struct {
+		AccessToken string `json:"access_token"`
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&tokenResponse)
+	if err != nil {
+		panic(err)
+	}
+
+	target = "https://api.github.com/user"
+
+	req, err = http.NewRequest(http.MethodGet, target, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+tokenResponse.AccessToken)
+
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var infoResponse struct {
+		Id        int64  `json:"id"`
+		AvatarUrl string `json:"avatar_url"`
+		Name      string `json:"name"`
+		Email     string `json:"email"`
+		Location  string `json:"location"`
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&infoResponse)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(infoResponse)
+	ctx.JSON(http.StatusOK, Result{
+		Data: infoResponse,
+	})
 }
 
 func (u *UserHandler) SignUp(ctx *gin.Context) {
