@@ -289,15 +289,6 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 }
 
 func (u *UserHandler) Profile(ctx *gin.Context) {
-	type Res struct {
-		UserId       uint64 `json:"user_id"`
-		Email        string `json:"email"`
-		Phone        string `json:"phone"`
-		Nickname     string `json:"nickname"`
-		Birthday     string `json:"birthday"`
-		Introduction string `json:"introduction"`
-	}
-
 	userId := ctx.GetUint64("UserId")
 
 	user, err := u.svc.QueryProfile(ctx, userId)
