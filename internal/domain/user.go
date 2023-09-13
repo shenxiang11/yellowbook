@@ -9,8 +9,8 @@ type User struct {
 	Password   string
 	CreateTime time.Time
 	UpdateTime time.Time
-	// 用户信息，为注册后用户补充
-	Profile *Profile
+	GithubId   uint64
+	Profile    *Profile
 }
 
 type Profile struct {

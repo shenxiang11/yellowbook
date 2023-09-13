@@ -20,7 +20,8 @@ type IUserService interface {
 	SignUp(ctx context.Context, u domain.User) error
 	EditProfile(ctx context.Context, u domain.Profile) error
 	QueryProfile(ctx context.Context, userId uint64) (domain.User, error)
-	FindOrCreate(ctx context.Context, phone string) (domain.User, error)
+	FindOrCreateByPhone(ctx context.Context, phone string) (domain.User, error)
+	FindOrCreateByGithubId(ctx context.Context, githubId uint64) (domain.User, error)
 	CompareHashAndPassword(ctx context.Context, hashedPassword []byte, password []byte) error
 	GenerateFromPassword(ctx context.Context, password []byte) ([]byte, error)
 	QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error)
@@ -87,7 +88,7 @@ func (svc *UserService) QueryProfile(ctx context.Context, userId uint64) (domain
 	return svc.repo.QueryProfile(ctx, userId)
 }
 
-func (svc *UserService) FindOrCreate(ctx context.Context, phone string) (domain.User, error) {
+func (svc *UserService) FindOrCreateByPhone(ctx context.Context, phone string) (domain.User, error) {
 	u, err := svc.repo.FindByPhone(ctx, phone)
 	if !errors.Is(err, repository.ErrUserNotFound) {
 		return u, err
@@ -100,6 +101,21 @@ func (svc *UserService) FindOrCreate(ctx context.Context, phone string) (domain.
 	}
 
 	return svc.repo.FindByPhone(ctx, phone)
+}
+
+func (svc *UserService) FindOrCreateByGithubId(ctx context.Context, githubId uint64) (domain.User, error) {
+	u, err := svc.repo.FindByGithubId(ctx, githubId)
+	if !errors.Is(err, repository.ErrUserNotFound) {
+		return u, err
+	}
+
+	u = domain.User{GithubId: githubId}
+	err = svc.repo.Create(ctx, u)
+	if err != nil && !errors.Is(err, repository.ErrUserDuplicate) {
+		return domain.User{}, err
+	}
+
+	return svc.repo.FindByGithubId(ctx, githubId)
 }
 
 func (svc *UserService) CompareHashAndPassword(ctx context.Context, hashedPassword []byte, password []byte) error {

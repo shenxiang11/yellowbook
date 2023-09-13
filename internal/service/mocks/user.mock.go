@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 	domain "yellowbook/internal/domain"
 
+	proto "github.com/shenxiang11/yellowbook-proto/proto"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -63,19 +64,34 @@ func (mr *MockIUserServiceMockRecorder) EditProfile(ctx, u interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditProfile", reflect.TypeOf((*MockIUserService)(nil).EditProfile), ctx, u)
 }
 
-// FindOrCreate mocks base method.
-func (m *MockIUserService) FindOrCreate(ctx context.Context, phone string) (domain.User, error) {
+// FindOrCreateByGithubId mocks base method.
+func (m *MockIUserService) FindOrCreateByGithubId(ctx context.Context, githubId uint64) (domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindOrCreate", ctx, phone)
+	ret := m.ctrl.Call(m, "FindOrCreateByGithubId", ctx, githubId)
 	ret0, _ := ret[0].(domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindOrCreate indicates an expected call of FindOrCreate.
-func (mr *MockIUserServiceMockRecorder) FindOrCreate(ctx, phone interface{}) *gomock.Call {
+// FindOrCreateByGithubId indicates an expected call of FindOrCreateByGithubId.
+func (mr *MockIUserServiceMockRecorder) FindOrCreateByGithubId(ctx, githubId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOrCreate", reflect.TypeOf((*MockIUserService)(nil).FindOrCreate), ctx, phone)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOrCreateByGithubId", reflect.TypeOf((*MockIUserService)(nil).FindOrCreateByGithubId), ctx, githubId)
+}
+
+// FindOrCreateByPhone mocks base method.
+func (m *MockIUserService) FindOrCreateByPhone(ctx context.Context, phone string) (domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindOrCreateByPhone", ctx, phone)
+	ret0, _ := ret[0].(domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindOrCreateByPhone indicates an expected call of FindOrCreateByPhone.
+func (mr *MockIUserServiceMockRecorder) FindOrCreateByPhone(ctx, phone interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOrCreateByPhone", reflect.TypeOf((*MockIUserService)(nil).FindOrCreateByPhone), ctx, phone)
 }
 
 // GenerateFromPassword mocks base method.
@@ -124,9 +140,9 @@ func (mr *MockIUserServiceMockRecorder) QueryProfile(ctx, userId interface{}) *g
 }
 
 // QueryUsers mocks base method.
-func (m *MockIUserService) QueryUsers(ctx context.Context, page, pageSize int) ([]domain.User, int64, error) {
+func (m *MockIUserService) QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueryUsers", ctx, page, pageSize)
+	ret := m.ctrl.Call(m, "QueryUsers", ctx, filter)
 	ret0, _ := ret[0].([]domain.User)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -134,9 +150,9 @@ func (m *MockIUserService) QueryUsers(ctx context.Context, page, pageSize int) (
 }
 
 // QueryUsers indicates an expected call of QueryUsers.
-func (mr *MockIUserServiceMockRecorder) QueryUsers(ctx, page, pageSize interface{}) *gomock.Call {
+func (mr *MockIUserServiceMockRecorder) QueryUsers(ctx, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryUsers", reflect.TypeOf((*MockIUserService)(nil).QueryUsers), ctx, page, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryUsers", reflect.TypeOf((*MockIUserService)(nil).QueryUsers), ctx, filter)
 }
 
 // SignUp mocks base method.

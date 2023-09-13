@@ -24,6 +24,7 @@ type UserRepository interface {
 	QueryProfile(ctx context.Context, uid uint64) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
 	QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error)
+	FindByGithubId(ctx context.Context, id uint64) (domain.User, error)
 }
 
 type CachedUserRepository struct {
@@ -44,12 +45,16 @@ func (r *CachedUserRepository) FindByEmail(ctx context.Context, email string) (d
 		return domain.User{}, err
 	}
 
-	return domain.User{
-		Id:       u.Id,
-		Email:    u.Email.String,
-		Phone:    u.Phone.String,
-		Password: u.Password,
-	}, nil
+	return r.entityToDomain(u), nil
+}
+
+func (r *CachedUserRepository) FindByGithubId(ctx context.Context, id uint64) (domain.User, error) {
+	u, err := r.dao.FindByGithubId(ctx, id)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return r.entityToDomain(u), nil
 }
 
 func (r *CachedUserRepository) Create(ctx context.Context, u domain.User) error {
@@ -57,6 +62,10 @@ func (r *CachedUserRepository) Create(ctx context.Context, u domain.User) error 
 		Email: sql.NullString{
 			String: u.Email,
 			Valid:  u.Email != "",
+		},
+		GithubId: sql.NullInt64{
+			Int64: int64(u.GithubId),
+			Valid: u.GithubId != 0,
 		},
 		Phone: sql.NullString{
 			String: u.Phone,
@@ -134,6 +143,7 @@ func (r *CachedUserRepository) entityToDomain(u dao.User) domain.User {
 		Email:      u.Email.String,
 		Phone:      u.Phone.String,
 		Password:   u.Password,
+		GithubId:   uint64(u.GithubId.Int64),
 		CreateTime: time.UnixMilli(u.CreateTime).UTC(),
 		UpdateTime: time.UnixMilli(u.UpdateTime).UTC(),
 	}

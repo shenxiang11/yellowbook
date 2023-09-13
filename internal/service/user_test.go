@@ -415,7 +415,7 @@ func TestUserService_FindOrCreate(t *testing.T) {
 
 			svc := NewUserService(repo)
 
-			user, err := svc.FindOrCreate(context.Background(), tc.phone)
+			user, err := svc.FindOrCreateByPhone(context.Background(), tc.phone)
 			assert.Equal(t, err, tc.wantErr)
 			assert.Equal(t, user, tc.wantUser)
 		})
@@ -435,7 +435,7 @@ func TestUserService_QueryUsers(t *testing.T) {
 			mock: func(ctrl *gomock.Controller) repository.UserRepository {
 				repo := repomocks.NewMockUserRepository(ctrl)
 
-				repo.EXPECT().QueryUsers(gomock.Any(), gomock.Any(), gomock.Any()).Return([]domain.User{
+				repo.EXPECT().QueryUsers(gomock.Any(), gomock.Any()).Return([]domain.User{
 					{Email: "1"},
 					{Email: "2"},
 				}, int64(2), nil)
@@ -457,7 +457,7 @@ func TestUserService_QueryUsers(t *testing.T) {
 			repo := tc.mock(ctrl)
 			svc := NewUserService(repo)
 
-			users, total, err := svc.QueryUsers(context.Background(), 1, 10)
+			users, total, err := svc.QueryUsers(context.Background(), nil)
 			assert.Equal(t, err, tc.wantErr)
 			assert.Equal(t, total, tc.wantTotal)
 			assert.Equal(t, users, tc.wantUsers)

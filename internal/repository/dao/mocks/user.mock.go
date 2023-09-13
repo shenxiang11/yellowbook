@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 	dao "yellowbook/internal/repository/dao"
 
+	proto "github.com/shenxiang11/yellowbook-proto/proto"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -48,6 +49,21 @@ func (m *MockUserDao) FindByEmail(ctx context.Context, email string) (dao.User, 
 func (mr *MockUserDaoMockRecorder) FindByEmail(ctx, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByEmail", reflect.TypeOf((*MockUserDao)(nil).FindByEmail), ctx, email)
+}
+
+// FindByGithubId mocks base method.
+func (m *MockUserDao) FindByGithubId(ctx context.Context, id uint64) (dao.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByGithubId", ctx, id)
+	ret0, _ := ret[0].(dao.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByGithubId indicates an expected call of FindByGithubId.
+func (mr *MockUserDaoMockRecorder) FindByGithubId(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByGithubId", reflect.TypeOf((*MockUserDao)(nil).FindByGithubId), ctx, id)
 }
 
 // FindByPhone mocks base method.
@@ -95,9 +111,9 @@ func (mr *MockUserDaoMockRecorder) Insert(ctx, u interface{}) *gomock.Call {
 }
 
 // QueryUsers mocks base method.
-func (m *MockUserDao) QueryUsers(ctx context.Context, page, pageSize int) ([]dao.User, int64, error) {
+func (m *MockUserDao) QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]dao.User, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueryUsers", ctx, page, pageSize)
+	ret := m.ctrl.Call(m, "QueryUsers", ctx, filter)
 	ret0, _ := ret[0].([]dao.User)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -105,9 +121,9 @@ func (m *MockUserDao) QueryUsers(ctx context.Context, page, pageSize int) ([]dao
 }
 
 // QueryUsers indicates an expected call of QueryUsers.
-func (mr *MockUserDaoMockRecorder) QueryUsers(ctx, page, pageSize interface{}) *gomock.Call {
+func (mr *MockUserDaoMockRecorder) QueryUsers(ctx, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryUsers", reflect.TypeOf((*MockUserDao)(nil).QueryUsers), ctx, page, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryUsers", reflect.TypeOf((*MockUserDao)(nil).QueryUsers), ctx, filter)
 }
 
 // UpdateProfile mocks base method.

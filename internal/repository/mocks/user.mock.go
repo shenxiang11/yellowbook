@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 	domain "yellowbook/internal/domain"
 
+	proto "github.com/shenxiang11/yellowbook-proto/proto"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -64,6 +65,21 @@ func (mr *MockUserRepositoryMockRecorder) FindByEmail(ctx, email interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByEmail", reflect.TypeOf((*MockUserRepository)(nil).FindByEmail), ctx, email)
 }
 
+// FindByGithubId mocks base method.
+func (m *MockUserRepository) FindByGithubId(ctx context.Context, id uint64) (domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByGithubId", ctx, id)
+	ret0, _ := ret[0].(domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByGithubId indicates an expected call of FindByGithubId.
+func (mr *MockUserRepositoryMockRecorder) FindByGithubId(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByGithubId", reflect.TypeOf((*MockUserRepository)(nil).FindByGithubId), ctx, id)
+}
+
 // FindByPhone mocks base method.
 func (m *MockUserRepository) FindByPhone(ctx context.Context, phone string) (domain.User, error) {
 	m.ctrl.T.Helper()
@@ -95,9 +111,9 @@ func (mr *MockUserRepositoryMockRecorder) QueryProfile(ctx, uid interface{}) *go
 }
 
 // QueryUsers mocks base method.
-func (m *MockUserRepository) QueryUsers(ctx context.Context, page, pageSize int) ([]domain.User, int64, error) {
+func (m *MockUserRepository) QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]domain.User, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueryUsers", ctx, page, pageSize)
+	ret := m.ctrl.Call(m, "QueryUsers", ctx, filter)
 	ret0, _ := ret[0].([]domain.User)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
@@ -105,9 +121,9 @@ func (m *MockUserRepository) QueryUsers(ctx context.Context, page, pageSize int)
 }
 
 // QueryUsers indicates an expected call of QueryUsers.
-func (mr *MockUserRepositoryMockRecorder) QueryUsers(ctx, page, pageSize interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) QueryUsers(ctx, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryUsers", reflect.TypeOf((*MockUserRepository)(nil).QueryUsers), ctx, page, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryUsers", reflect.TypeOf((*MockUserRepository)(nil).QueryUsers), ctx, filter)
 }
 
 // UpdateProfile mocks base method.

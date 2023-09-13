@@ -22,19 +22,27 @@ type UserDao interface {
 	FindProfileByUserId(ctx context.Context, userId uint64) (User, error)
 	FindByPhone(ctx context.Context, phone string) (User, error)
 	QueryUsers(ctx context.Context, filter *proto.GetUserListRequest) ([]User, int64, error)
+	FindByGithubId(ctx context.Context, id uint64) (User, error)
 }
 
 type GormUserDAO struct {
 	db *gorm.DB
 }
 
-func NewUserDAO(db *gorm.DB) *GormUserDAO {
+func NewUserDAO(db *gorm.DB) UserDao {
 	return &GormUserDAO{db: db}
 }
 
 func (dao *GormUserDAO) FindByEmail(ctx context.Context, email string) (User, error) {
 	var u User
 	err := dao.db.WithContext(ctx).Where("email = ?", email).First(&u).Error
+
+	return u, err
+}
+
+func (dao *GormUserDAO) FindByGithubId(ctx context.Context, id uint64) (User, error) {
+	var u User
+	err := dao.db.WithContext(ctx).Where("github_id = ?", id).First(&u).Error
 
 	return u, err
 }
@@ -145,6 +153,7 @@ type User struct {
 	Email         sql.NullString `gorm:"unique"`
 	Phone         sql.NullString `gorm:"unique"`
 	Password      string
+	GithubId      sql.NullInt64 `gorm:"unique"`
 	CreateTime    int64
 	UpdateTime    int64
 	Profile       *UserProfile

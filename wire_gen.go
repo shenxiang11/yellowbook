@@ -22,10 +22,10 @@ import (
 
 func InitWebServer() *gin.Engine {
 	db := ioc.InitDB()
-	userDAO := dao.NewUserDAO(db)
+	userDao := dao.NewUserDAO(db)
 	cmdable := ioc.InitRedis()
 	userCache := cache.NewUserCache(cmdable)
-	userRepository := repository.NewCachedUserRepository(userDAO, userCache)
+	userRepository := repository.NewCachedUserRepository(userDao, userCache)
 	iUserService := service.NewUserService(userRepository)
 	ristrettoCache := ioc.InitRistretto()
 	codeCache := ristretto.NewCodeCache(ristrettoCache)
@@ -33,18 +33,19 @@ func InitWebServer() *gin.Engine {
 	client := ioc.InitCloopen()
 	smsService := ioc.InitSMSService(client)
 	codeService := service.NewCodeService(codeRepository, smsService)
+	iService := ioc.InitGithub()
 	ijwtGenerator := ioc.InitJWT()
-	userHandler := web.NewUserHandler(iUserService, codeService, ijwtGenerator)
+	userHandler := web.NewUserHandler(iUserService, codeService, iService, ijwtGenerator)
 	engine := ioc.InitWebServer(userHandler)
 	return engine
 }
 
 func InitManageServer() *gin.Engine {
 	db := ioc.InitDB()
-	userDAO := dao.NewUserDAO(db)
+	userDao := dao.NewUserDAO(db)
 	cmdable := ioc.InitRedis()
 	userCache := cache.NewUserCache(cmdable)
-	userRepository := repository.NewCachedUserRepository(userDAO, userCache)
+	userRepository := repository.NewCachedUserRepository(userDao, userCache)
 	iUserService := service.NewUserService(userRepository)
 	userHandler := manage.NewUserHandler(iUserService)
 	engine := ioc.InitManageServer(userHandler)

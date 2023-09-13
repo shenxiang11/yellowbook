@@ -439,7 +439,7 @@ func TestCachedUserRepository_QueryUsers(t *testing.T) {
 				d := daomocks.NewMockUserDao(ctrl)
 				c := cachemocks.NewMockUserCache(ctrl)
 
-				d.EXPECT().QueryUsers(gomock.Any(), gomock.Any(), gomock.Any()).Return([]dao.User{
+				d.EXPECT().QueryUsers(gomock.Any(), gomock.Any()).Return([]dao.User{
 					{
 						Id: 1,
 						Phone: sql.NullString{
@@ -479,7 +479,7 @@ func TestCachedUserRepository_QueryUsers(t *testing.T) {
 				d := daomocks.NewMockUserDao(ctrl)
 				c := cachemocks.NewMockUserCache(ctrl)
 
-				d.EXPECT().QueryUsers(gomock.Any(), gomock.Any(), gomock.Any()).Return([]dao.User{}, int64(0), errors.New("模拟错误"))
+				d.EXPECT().QueryUsers(gomock.Any(), gomock.Any()).Return([]dao.User{}, int64(0), errors.New("模拟错误"))
 
 				return d, c
 			},
@@ -497,7 +497,7 @@ func TestCachedUserRepository_QueryUsers(t *testing.T) {
 			d, c := tc.mock(ctrl)
 			repo := NewCachedUserRepository(d, c)
 
-			users, total, err := repo.QueryUsers(context.Background(), 1, 1)
+			users, total, err := repo.QueryUsers(context.Background(), nil)
 
 			assert.Equal(t, err, tc.wantErr)
 			assert.Equal(t, total, tc.wantTotal)

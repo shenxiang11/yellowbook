@@ -16,3 +16,5 @@ mock:
 
 	@/Users/fs/go/bin/mockgen -source=./internal/repository/dao/user.go -destination=./internal/repository/dao/mocks/user.mock.go -package=daomocks
 	@/Users/fs/go/bin/mockgen -source=./internal/repository/cache/user.go -destination=./internal/repository/cache/mocks/user.mock.go -package=cachemocks
+
+	@/Users/fs/go/bin/mockgen -source=./internal/service/github/service.go -package=githubmocks -destination=./internal/service/github/mocks/service.mock.go
