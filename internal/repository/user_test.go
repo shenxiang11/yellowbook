@@ -17,6 +17,8 @@ import (
 )
 
 func TestCachedUserRepository_FindByEmail(t *testing.T) {
+	now := time.UnixMilli(1694575373863).UTC()
+
 	testCases := []struct {
 		name     string
 		mock     func(ctrl *gomock.Controller) (dao.UserDao, cache.UserCache)
@@ -37,13 +39,17 @@ func TestCachedUserRepository_FindByEmail(t *testing.T) {
 						String: "123@qq.com",
 						Valid:  true,
 					},
+					CreateTime: now.UnixMilli(),
+					UpdateTime: now.UnixMilli(),
 				}, nil)
 
 				return d, c
 			},
 			wantUser: domain.User{
-				Id:    1,
-				Email: "123@qq.com",
+				Id:         1,
+				Email:      "123@qq.com",
+				CreateTime: now,
+				UpdateTime: now,
 			},
 		},
 		{
