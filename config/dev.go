@@ -3,6 +3,10 @@
 package config
 
 var Conf = &Config{
+	Consul: ConsulConfig{
+		DSN: "localhost:18500",
+		Key: "yellowBookConsul",
+	},
 	Web: GinConfig{
 		Port: ":8080",
 	},

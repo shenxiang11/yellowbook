@@ -16,3 +16,8 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - '16379:6379'
+  consul:
+    image: 'consul:1.15.4'
+    ports:
+      - '18500:8500'
+      - '18600:8600'

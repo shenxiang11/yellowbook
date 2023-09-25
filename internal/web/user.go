@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/shenxiang11/yellowbook-proto/proto"
+	"github.com/spf13/viper"
 	"net/http"
 	"strconv"
 	"time"
@@ -59,6 +60,10 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 	ug.POST("/login_sms", u.LoginSMS)
 	ug.GET("/github/oauth", u.Oauth)
 	ug.GET("/github/authorize", u.Authorize)
+	ug.GET("/version", func(ctx *gin.Context) {
+		val := viper.Get("version")
+		ctx.JSON(http.StatusOK, gin.H{"version": val})
+	})
 }
 
 func (u *UserHandler) Oauth(ctx *gin.Context) {

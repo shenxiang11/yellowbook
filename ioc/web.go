@@ -27,6 +27,7 @@ func InitWebServer(userHandler *web.UserHandler) *gin.Engine {
 			IgnorePaths("/users/login_sms").
 			IgnorePaths("/users/github/oauth").
 			IgnorePaths("/users/github/authorize").
+			IgnorePaths("/users/version").
 			Build(),
 	)
 
