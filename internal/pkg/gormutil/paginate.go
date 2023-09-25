@@ -1,4 +1,4 @@
-package paginate
+package gormutil
 
 import "gorm.io/gorm"
 

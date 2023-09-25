@@ -8,7 +8,7 @@ import (
 	"github.com/shenxiang11/yellowbook-proto/proto"
 	"gorm.io/gorm"
 	"time"
-	"yellowbook/internal/pkg/paginate"
+	"yellowbook/internal/pkg/gormutil"
 )
 
 var ErrUserDuplicate = errors.New("用户冲突")
@@ -113,7 +113,7 @@ func (dao *GormUserDAO) QueryUsers(ctx context.Context, filter *proto.GetUserLis
 
 	var users []User
 
-	query := dao.db.Scopes(paginate.Paginate(int(filter.Page), int(filter.PageSize))).WithContext(ctx).
+	query := dao.db.Scopes(gormutil.Paginate(int(filter.Page), int(filter.PageSize))).WithContext(ctx).
 		Select("users.*, Profile.*, CASE WHEN Profile.update_time IS NOT NULL AND users.update_time <= Profile.update_time THEN Profile.update_time ELSE users.update_time END AS MaxUpdateTime").
 		Joins("Profile").Model(&User{})
 
