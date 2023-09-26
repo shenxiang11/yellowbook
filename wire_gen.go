@@ -40,7 +40,8 @@ func InitWebServer() *gin.Engine {
 	iService := ioc.InitGithub()
 	ijwtGenerator := ioc.InitJWT()
 	userHandler := web.NewUserHandler(iUserService, codeService, iService, ijwtGenerator)
-	engine := ioc.InitWebServer(userHandler)
+	logger := ioc.InitLogger()
+	engine := ioc.InitWebServer(userHandler, logger)
 	return engine
 }
 

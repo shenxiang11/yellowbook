@@ -35,6 +35,7 @@ func InitWebServer() *gin.Engine {
 		ioc.InitCloopen,
 		ioc.InitJWT,
 		ioc.InitGithub,
+		ioc.InitLogger,
 	)
 	return new(gin.Engine)
 }
