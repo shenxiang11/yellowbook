@@ -15,6 +15,7 @@ import (
 	"yellowbook/internal/pkg/jwt_generator"
 	"yellowbook/internal/service"
 	"yellowbook/internal/service/github"
+	"yellowbook/pkg/ginx"
 )
 
 type UserHandler struct {
@@ -60,10 +61,11 @@ func (u *UserHandler) RegisterRoutes(ug *gin.RouterGroup) {
 	ug.POST("/login_sms", u.LoginSMS)
 	ug.GET("/github/oauth", u.Oauth)
 	ug.GET("/github/authorize", u.Authorize)
-	ug.GET("/version", func(ctx *gin.Context) {
+
+	ug.GET("/version", ginx.NewExtendContext(func(ctx ginx.Context) {
 		val := viper.Get("version")
-		ctx.JSON(http.StatusOK, gin.H{"version": val})
-	})
+		ctx.JSONWithLog(http.StatusOK, gin.H{"version": val})
+	}))
 }
 
 func (u *UserHandler) Oauth(ctx *gin.Context) {

@@ -72,11 +72,6 @@ func initViper() {
 		panic(err)
 	}
 
-	err = viper.WatchRemoteConfig()
-	if err != nil {
-		panic(err)
-	}
-
 	go func() {
 		for {
 			// 注意：修改远程配置会有 5s 的延迟才能生效
