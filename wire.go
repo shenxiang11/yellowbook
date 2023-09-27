@@ -18,8 +18,11 @@ import (
 
 func InitWebServer() *gin.Engine {
 	wire.Build(
+		web.NewResourceHandler,
 		web.NewUserHandler,
+
 		service.NewUserService,
+		service.NewResourceService,
 		repository.NewCachedUserRepository,
 		dao.NewUserDAO,
 		cache.NewUserCache,
@@ -27,6 +30,7 @@ func InitWebServer() *gin.Engine {
 		repository.NewCodeRepository,
 		ristretto.NewCodeCache,
 
+		ioc.InitOss,
 		ioc.InitRistretto,
 		ioc.InitWebServer,
 		ioc.InitSMSService,

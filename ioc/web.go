@@ -10,7 +10,11 @@ import (
 	"yellowbook/pkg/logger"
 )
 
-func InitWebServer(userHandler *web.UserHandler, l logger.Logger) *gin.Engine {
+func InitWebServer(
+	userHandler *web.UserHandler,
+	resourceHandler *web.ResourceHandler,
+	l logger.Logger,
+) *gin.Engine {
 	server := gin.Default()
 
 	server.Use(cors.New(cors.Config{
@@ -41,6 +45,7 @@ func InitWebServer(userHandler *web.UserHandler, l logger.Logger) *gin.Engine {
 	)
 
 	userHandler.RegisterRoutes(server.Group("/users"))
+	resourceHandler.RegisterRoutes(server.Group("/resources"))
 
 	return server
 }
