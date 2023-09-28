@@ -9,6 +9,7 @@ import (
 
 type IArticleService interface {
 	Save(ctx context.Context, article domain.Article) (uint64, error)
+	List(ctx context.Context) ([]domain.Article, int64, error)
 }
 
 type ArticleService struct {
@@ -30,4 +31,8 @@ func (a *ArticleService) Save(ctx context.Context, article domain.Article) (uint
 	}
 
 	return a.repo.Create(ctx, article)
+}
+
+func (a *ArticleService) List(ctx context.Context) ([]domain.Article, int64, error) {
+	return a.repo.List(ctx)
 }

@@ -62,7 +62,12 @@ func InitManageServer() *gin.Engine {
 	userRepository := repository.NewCachedUserRepository(userDao, userCache)
 	iUserService := service.NewUserService(userRepository)
 	userHandler := manage.NewUserHandler(iUserService)
-	engine := ioc.InitManageServer(userHandler)
+	iArticleDAO := dao.NewArticleDAO(db)
+	iArticleRepository := repository.NewArticleRepository(iArticleDAO)
+	logger := ioc.InitLogger()
+	iArticleService := service.NewArticleService(iArticleRepository, logger)
+	articleHandler := manage.NewArticleHandler(iArticleService)
+	engine := ioc.InitManageServer(userHandler, articleHandler)
 	return engine
 }
 

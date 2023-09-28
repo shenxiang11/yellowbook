@@ -55,12 +55,19 @@ func InitWebServer() *gin.Engine {
 
 func InitManageServer() *gin.Engine {
 	wire.Build(
+		manage.NewArticleHandler,
 		manage.NewUserHandler,
+
+		service.NewArticleService,
 		service.NewUserService,
 		repository.NewCachedUserRepository,
+		repository.NewArticleRepository,
+
+		dao.NewArticleDAO,
 		dao.NewUserDAO,
 		cache.NewUserCache,
 
+		ioc.InitLogger,
 		ioc.InitManageServer,
 		ioc.InitDB,
 		ioc.InitRedis,

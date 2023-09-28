@@ -7,7 +7,7 @@ import (
 	"yellowbook/internal/manage"
 )
 
-func InitManageServer(userHandler *manage.UserHandler) *gin.Engine {
+func InitManageServer(userHandler *manage.UserHandler, articleHandler *manage.ArticleHandler) *gin.Engine {
 	server := gin.Default()
 
 	server.Use(cors.New(cors.Config{
@@ -24,6 +24,7 @@ func InitManageServer(userHandler *manage.UserHandler) *gin.Engine {
 	//)
 
 	userHandler.RegisterRoutes(server.Group("/users"))
+	articleHandler.RegisterRoutes(server.Group("/articles"))
 
 	return server
 }

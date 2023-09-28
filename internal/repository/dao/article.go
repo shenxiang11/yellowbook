@@ -11,6 +11,7 @@ import (
 type IArticleDAO interface {
 	Insert(ctx context.Context, art Article) (uint64, error)
 	Update(ctx context.Context, article Article) error
+	FindList(ctx context.Context) ([]Article, int64, error)
 }
 
 type ArticleDAO struct {
@@ -56,6 +57,20 @@ func (dao *ArticleDAO) Update(ctx context.Context, article Article) error {
 	}
 
 	return res.Error
+}
+
+func (dao *ArticleDAO) FindList(ctx context.Context) ([]Article, int64, error) {
+	var articles []Article
+	var total int64
+	dao.db.WithContext(ctx).Model(&Article{}).Count(&total)
+
+	query := dao.db.WithContext(ctx).
+		Order("articles.create_time DESC").
+		Model(&Article{})
+
+	err := query.Find(&articles).Error
+
+	return articles, total, err
 }
 
 type Article struct {
