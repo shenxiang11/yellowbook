@@ -72,6 +72,8 @@ func (dao *GormUserDAO) UpdateProfile(ctx context.Context, p UserProfile) error 
 	profile.Nickname = p.Nickname
 	profile.Birthday = p.Birthday
 	profile.Introduction = p.Introduction
+	profile.Avatar = p.Avatar
+	profile.Gender = p.Gender
 
 	now := time.Now().UnixMilli()
 	if profile.CreateTime == 0 {
@@ -112,8 +114,11 @@ func (dao *GormUserDAO) QueryUsers(ctx context.Context, filter *proto.GetUserLis
 	}
 
 	var users []User
+	var total int64
+	dao.db.WithContext(ctx).Model(&User{}).Count(&total)
 
 	query := dao.db.Scopes(gormutil.Paginate(int(filter.Page), int(filter.PageSize))).WithContext(ctx).
+		Order("users.create_time DESC").
 		Select("users.*, Profile.*, CASE WHEN Profile.update_time IS NOT NULL AND users.update_time <= Profile.update_time THEN Profile.update_time ELSE users.update_time END AS MaxUpdateTime").
 		Joins("Profile").Model(&User{})
 
@@ -145,7 +150,7 @@ func (dao *GormUserDAO) QueryUsers(ctx context.Context, filter *proto.GetUserLis
 		return []User{}, 0, err
 	}
 
-	return users, int64(len(users)), nil
+	return users, total, nil
 }
 
 type User struct {
@@ -164,6 +169,8 @@ type UserProfile struct {
 	UserId       uint64 `gorm:"unique"`
 	Nickname     string
 	Birthday     int64
+	Avatar       string
+	Gender       proto.Gender
 	Introduction string
 	CreateTime   int64
 	UpdateTime   int64

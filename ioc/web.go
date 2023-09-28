@@ -13,6 +13,7 @@ import (
 func InitWebServer(
 	userHandler *web.UserHandler,
 	resourceHandler *web.ResourceHandler,
+	articleHandler *web.ArticleHandler,
 	l logger.Logger,
 ) *gin.Engine {
 	server := gin.Default()
@@ -46,6 +47,7 @@ func InitWebServer(
 
 	userHandler.RegisterRoutes(server.Group("/users"))
 	resourceHandler.RegisterRoutes(server.Group("/resources"))
+	articleHandler.RegisterRoutes(server.Group("/articles"))
 
 	return server
 }

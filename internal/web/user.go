@@ -240,6 +240,8 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 		Nickname:     req.Nickname,
 		Birthday:     req.Birthday,
 		Introduction: req.Introduction,
+		Avatar:       req.Avatar,
+		Gender:       req.Gender,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, Result{
@@ -275,6 +277,8 @@ func (u *UserHandler) Profile(ctx *gin.Context) {
 		res.Nickname = user.Profile.Nickname
 		res.Birthday = user.Profile.Birthday
 		res.Introduction = user.Profile.Introduction
+		res.Avatar = user.Profile.Avatar
+		res.Gender = user.Profile.Gender
 	}
 
 	ctx.JSON(http.StatusOK, Result{

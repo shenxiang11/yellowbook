@@ -47,6 +47,10 @@ func main() {
 		}
 	}()
 
+	go func() {
+		InitSpider().Run()
+	}()
+
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	<-quit

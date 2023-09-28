@@ -41,10 +41,16 @@ func InitWebServer() *gin.Engine {
 	ijwtGenerator := ioc.InitJWT()
 	userHandler := web.NewUserHandler(iUserService, codeService, iService, ijwtGenerator)
 	ossIService := ioc.InitOss()
-	iResourceService := service.NewResourceService(ossIService)
-	resourceHandler := web.NewResourceHandler(iResourceService)
+	iResourceDao := dao.NewResourceDAO(db)
+	iResourceRepository := repository.NewResourceRepository(iResourceDao)
 	logger := ioc.InitLogger()
-	engine := ioc.InitWebServer(userHandler, resourceHandler, logger)
+	iResourceService := service.NewResourceService(ossIService, iResourceRepository, logger)
+	resourceHandler := web.NewResourceHandler(iResourceService)
+	iArticleDAO := dao.NewArticleDAO(db)
+	iArticleRepository := repository.NewArticleRepository(iArticleDAO)
+	iArticleService := service.NewArticleService(iArticleRepository, logger)
+	articleHandler := web.NewArticleHandler(iArticleService)
+	engine := ioc.InitWebServer(userHandler, resourceHandler, articleHandler, logger)
 	return engine
 }
 
@@ -58,4 +64,14 @@ func InitManageServer() *gin.Engine {
 	userHandler := manage.NewUserHandler(iUserService)
 	engine := ioc.InitManageServer(userHandler)
 	return engine
+}
+
+func InitSpider() *ioc.Spider {
+	db := ioc.InitDB()
+	iArticleDAO := dao.NewArticleDAO(db)
+	iArticleRepository := repository.NewArticleRepository(iArticleDAO)
+	logger := ioc.InitLogger()
+	iArticleService := service.NewArticleService(iArticleRepository, logger)
+	spider := ioc.NewSpider(iArticleService)
+	return spider
 }

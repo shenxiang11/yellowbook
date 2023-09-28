@@ -20,14 +20,23 @@ func InitWebServer() *gin.Engine {
 	wire.Build(
 		web.NewResourceHandler,
 		web.NewUserHandler,
+		web.NewArticleHandler,
 
 		service.NewUserService,
 		service.NewResourceService,
-		repository.NewCachedUserRepository,
-		dao.NewUserDAO,
-		cache.NewUserCache,
+		service.NewArticleService,
 		service.NewCodeService,
+
+		repository.NewCachedUserRepository,
+		repository.NewResourceRepository,
+		repository.NewArticleRepository,
 		repository.NewCodeRepository,
+
+		dao.NewResourceDAO,
+		dao.NewUserDAO,
+		dao.NewArticleDAO,
+
+		cache.NewUserCache,
 		ristretto.NewCodeCache,
 
 		ioc.InitOss,
@@ -57,4 +66,16 @@ func InitManageServer() *gin.Engine {
 		ioc.InitRedis,
 	)
 	return new(gin.Engine)
+}
+
+func InitSpider() *ioc.Spider {
+	wire.Build(
+		ioc.InitLogger,
+		ioc.InitDB,
+		dao.NewArticleDAO,
+		repository.NewArticleRepository,
+		service.NewArticleService,
+		ioc.NewSpider,
+	)
+	return &ioc.Spider{}
 }

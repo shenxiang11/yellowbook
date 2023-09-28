@@ -6,6 +6,8 @@ func InitTable(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&User{},
 		&UserProfile{},
+		&Resource{},
+		&Article{},
 		//&SMSRetry{},
 	)
 }

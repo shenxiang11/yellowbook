@@ -76,9 +76,23 @@ func (r *CachedUserRepository) Create(ctx context.Context, u domain.User) error 
 }
 
 func (r *CachedUserRepository) UpdateProfile(ctx context.Context, u domain.Profile) error {
-	t, err := time.Parse("2006-01-02", u.Birthday)
-	if err != nil {
-		return ErrUserBirthdayFormat
+	var t time.Time
+	var err error
+
+	up := dao.UserProfile{
+		UserId:       u.UserId,
+		Nickname:     u.Nickname,
+		Introduction: u.Introduction,
+		Avatar:       u.Avatar,
+		Gender:       u.Gender,
+	}
+
+	if u.Birthday != "" {
+		t, err = time.Parse("2006-01-02", u.Birthday)
+		if err != nil {
+			return ErrUserBirthdayFormat
+		}
+		up.Birthday = t.UnixMilli()
 	}
 
 	// 为了一致性，删除对应的缓存
@@ -87,12 +101,7 @@ func (r *CachedUserRepository) UpdateProfile(ctx context.Context, u domain.Profi
 		log.Printf("缓存删除失败：%v\n", err)
 	}
 
-	return r.dao.UpdateProfile(ctx, dao.UserProfile{
-		UserId:       u.UserId,
-		Nickname:     u.Nickname,
-		Birthday:     t.UnixMilli(),
-		Introduction: u.Introduction,
-	})
+	return r.dao.UpdateProfile(ctx, up)
 }
 
 func (r *CachedUserRepository) QueryProfile(ctx context.Context, uid uint64) (domain.User, error) {
@@ -154,6 +163,8 @@ func (r *CachedUserRepository) entityToDomain(u dao.User) domain.User {
 			Nickname:     u.Profile.Nickname,
 			Birthday:     time.UnixMilli(u.Profile.Birthday).UTC().Format("2006-01-02"),
 			Introduction: u.Profile.Introduction,
+			Avatar:       u.Profile.Avatar,
+			Gender:       u.Profile.Gender,
 			CreateTime:   time.UnixMilli(u.Profile.CreateTime).UTC(),
 			UpdateTime:   time.UnixMilli(u.Profile.UpdateTime).UTC(),
 		}

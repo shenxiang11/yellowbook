@@ -60,6 +60,8 @@ func (u *UserHandler) GetList(ctx *gin.Context) {
 					item.Nickname = el.Profile.Nickname
 					item.Birthday = el.Profile.Birthday
 					item.Introduction = el.Profile.Introduction
+					item.Avatar = el.Profile.Avatar
+					item.Gender = el.Profile.Gender
 
 					if el.UpdateTime.Compare(el.Profile.UpdateTime) == -1 {
 						item.UpdateTime = el.Profile.UpdateTime.UTC().Format("2006-01-02 03:04:05")

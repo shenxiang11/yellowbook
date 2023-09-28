@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"github.com/shenxiang11/yellowbook-proto/proto"
+	"time"
+)
 
 type User struct {
 	Id         uint64
@@ -18,6 +21,8 @@ type Profile struct {
 	Nickname     string
 	Birthday     string
 	Introduction string
+	Avatar       string
+	Gender       proto.Gender
 	CreateTime   time.Time
 	UpdateTime   time.Time
 }
